@@ -15,7 +15,7 @@ class Play extends Phaser.Scene {
         this.felix.play('felix_idle_left');
 
         // hat
-        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2);
+        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11);
         this.hat.setSize(16, 4).setOffset(8, 8)
 
         // change colors
@@ -76,14 +76,14 @@ class Play extends Phaser.Scene {
             this.felix.setVelocityX(0)
         }
 
-        if (cursors.up.isDown && this.felix.body.onFloor() && fixing == false) {
+        if (cursors.up.isDown && this.felix.body.onFloor() && fixing == false) { // jumping with directions
             this.felix.setVelocityY(-200);
         }
         
-        if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.1) && fixing == false) {
+        if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.1) && fixing == false) { // jumping on 1st level on ground
             this.felix.setVelocityY(-375);
         }
-        else if(cursors.up.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
+        else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/2) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
             this.felix.setVelocityY(-500);
         }
         else if(cursors.down.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
