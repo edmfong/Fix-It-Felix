@@ -71,11 +71,26 @@ class Load extends Phaser.Scene {
             frameHeight: 32,
         });
 
+        this.load.spritesheet('hat', './assets/spritesheet/hat.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
         this.load.spritesheet('buildings', './assets/spritesheet/buildings.png', {
             frameWidth: 128,
             frameHeight: 128,
         });
         this.load.spritesheet('obstacle', './assets/spritesheet/obstacles.png', {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+
+        this.load.spritesheet('window_1', './assets/spritesheet/window_1.png', {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+
+        this.load.spritesheet('window_2', './assets/spritesheet/window_2.png', {
             frameWidth: 16,
             frameHeight: 16,
         });
@@ -126,6 +141,27 @@ class Load extends Phaser.Scene {
         //     }),
         // });
 
+        // felix animations
+        this.anims.create({
+            key: 'felix_idle_right',
+            frameRate: 0,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Felix', {
+                start: 0,
+                end: 0,
+            }),
+        });
+
+        this.anims.create({
+            key: 'felix_idle_left',
+            frameRate: 0,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Felix', {
+                start: 4,
+                end: 4,
+            }),
+        });
+
         this.anims.create({
             key: 'felix_walk_right',
             frameRate: 5,
@@ -161,6 +197,67 @@ class Load extends Phaser.Scene {
             frameRate: 5,
             repeat: 1,
             frames: this.anims.generateFrameNumbers('Felix', {
+                start: 10,
+                end: 11,
+            }),
+        });
+
+        // hat animations
+        this.anims.create({
+            key: 'hat_idle_right',
+            frameRate: 0,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('hat', {
+                start: 0,
+                end: 0,
+            }),
+        });
+
+        this.anims.create({
+            key: 'hat_idle_left',
+            frameRate: 0,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('hat', {
+                start: 4,
+                end: 4,
+            }),
+        });
+
+        this.anims.create({
+            key: 'hat_walk_right',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('hat', {
+                start: 0,
+                end: 3,
+            }),
+        });
+
+        this.anims.create({
+            key: 'hat_walk_left',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('hat', {
+                start: 4,
+                end: 7,
+            }),
+        });
+
+        this.anims.create({
+            key: 'hat_fix_right',
+            frameRate: 5,
+            repeat: 1,
+            frames: this.anims.generateFrameNumbers('hat', {
+                start: 8,
+                end: 9,
+            }),
+        });
+
+        this.anims.create({
+            key: 'hat_fix_left',
+            frameRate: 5,
+            repeat: 1,
+            frames: this.anims.generateFrameNumbers('hat', {
                 start: 10,
                 end: 11,
             }),
