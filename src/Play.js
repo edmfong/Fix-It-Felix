@@ -18,10 +18,21 @@ class Play extends Phaser.Scene {
         this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11);
         this.hat.setSize(16, 4).setOffset(8, 8)
 
+        // pie
+        this.pie = this.physics.add.sprite(0, 0, 'misc', 0).setScale(3.5).setDepth(11).setOrigin(0.5, 0).setAlpha(0);
+
         // change colors
         this.superCheckTimer = this.time.addEvent({
             delay: 200,
             callback: this.superCondition,
+            callbackScope: this,
+            loop: true
+        });
+
+        // spawn pie
+        this.pieTimer = this.time.addEvent({
+            delay: 5000,
+            callback: this.spawnPie,
             callbackScope: this,
             loop: true
         });
@@ -225,6 +236,20 @@ class Play extends Phaser.Scene {
         }
         else {
             this.hat.clearTint();
+        }
+    }
+
+    spawnPie() {
+        this.rand = Phaser.Math.Between(1, 10);
+        if (!pieExists && this.rand == 1) {
+            pieExists = true;
+            this.pie.setAlpha(1);
+            this.randX = Phaser.Math.Between(0, 3);
+            this.randY = Phaser.Math.Between(0, 3);
+            this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
+            this.yPos = [2, 1.45, 1.14]
+            this.pie.x = width/2 + width/(this.xPos[this.randX]);
+            this.pie.y = height/(this.yPos[this.randY]);
         }
     }
 }

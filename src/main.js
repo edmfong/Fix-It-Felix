@@ -45,6 +45,7 @@ let isSuper = false;
 let fixOnCD = false;
 let fixing = false;
 let fixed = false;
+let pieExists = false
 // let velocity = 450;
 // let skySpeed = 1;
 // let buildingSpeed = 0.5;
