@@ -5,21 +5,31 @@ class Play extends Phaser.Scene {
 
     create() {
         // initialize building
-        this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 1).setScale(5);
+        this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 0).setScale(5);
 
-        // initalize player
-        this.felix = this.physics.add.sprite(width / 2, height / 3, 'Felix', 0).setScale(2).setDepth(10);
+        // initalize felix
+        this.felix = this.physics.add.sprite(width / 2, height / 3, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
         this.felix.setGravityY(1000);
         this.felix.body.setCollideWorldBounds(true);
         this.felix.setSize(4, 24).setOffset(14, 8)
         this.felix.play('felix_idle_left');
 
+        // initalize ralph
+        this.ralph = this.physics.add.sprite(width / 2, height / 2.9, 'Ralph', 0).setScale(4).setDepth(10).setOrigin(0.5, 1);
+        //this.ralph.setGravityY(1000);
+        // this.ralph.body.setCollideWorldBounds(true);
+        // this.ralph.setSize(4, 24).setOffset(14, 8)
+        this.ralph.play('ralph_idle');
+
         // hat
-        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11);
+        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11).setOrigin(0.5, 1);
         this.hat.setSize(16, 4).setOffset(8, 8)
 
         // pie
         this.pie = this.physics.add.sprite(0, 0, 'misc', 0).setScale(3.5).setDepth(11).setOrigin(0.5, 0).setAlpha(0);
+
+        // brick
+        this.brick = this.physics.add.sprite(0, 0, 'misc', 1).setScale(4).setDepth(10).setOrigin(0.5, 0).setAlpha(0);
 
         // change colors
         this.superCheckTimer = this.time.addEvent({
@@ -33,6 +43,13 @@ class Play extends Phaser.Scene {
         this.pieTimer = this.time.addEvent({
             delay: 5000,
             callback: this.spawnPie,
+            callbackScope: this,
+            loop: true
+        });
+
+        this.ralphAttack = this.time.addEvent({
+            delay: 4000,
+            callback: this.ralphMove,
             callbackScope: this,
             loop: true
         });
@@ -91,10 +108,11 @@ class Play extends Phaser.Scene {
             this.felix.setVelocityY(-200);
         }
         
-        if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.1) && fixing == false) { // jumping on 1st level on ground
+        if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y >= game.config.height - this.felix.height / 2) && fixing == false) { // jumping on 1st level on ground
+            console.log(height/5)
             this.felix.setVelocityY(-375);
         }
-        else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/2) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
+        else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.8) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
             this.felix.setVelocityY(-500);
         }
         else if(cursors.down.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
@@ -142,6 +160,14 @@ class Play extends Phaser.Scene {
             //console.log('yippe');
         }
 
+        // destroy bricks out of screen
+        if (this.brick.y > game.config.height || this.brick.y < 0) {
+            this.brick.setAlpha(0);
+            this.brick.setVelocityY(0);
+            this.brick.x = 0;
+            this.brick.y = 0;
+        }
+
     }
 
     setPlatform() {
@@ -154,11 +180,13 @@ class Play extends Phaser.Scene {
         this.addPlatform(width/2 - width/7.5, height/2.15);
         this.addPlatform(width/2 - width/7.5, height/1.53);
         this.addPlatform(width/2 - width/7.5, height/1.19);
-
+        
         // row 3
         this.addPlatform(width/2, height/2.15);
         this.addPlatform(width/2, height/1.53);
-        this.addPlatform(width/2, height/1.19);
+        if (level != 1) {
+            this.addPlatform(width/2, height/1.19);
+        }
 
         // row 4
         this.addPlatform(width/2 + width/7.5, height/2.15);
@@ -173,7 +201,12 @@ class Play extends Phaser.Scene {
 
     addPlatform(x, y) {
         let platform = new Platform(this, x, y, 'obstacle');
-        platform.setSize(15, 4).setOffset(0.5, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
+        if (level == 1 && x == width/2 && y == height/1.53) {
+            platform.setSize(22.5, 4).setOffset(-3, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
+        }
+        else {
+            platform.setSize(15, 4).setOffset(0.5, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
+        }
         platform.body.checkCollision.down = false;
         this.platformGroup.add(platform);     
     }
@@ -191,8 +224,10 @@ class Play extends Phaser.Scene {
 
         // row 3
         this.addWindow(width/2, height/2.415);
-        this.addWindow(width/2, height/1.662);
-        this.addWindow(width/2, height/1.267);
+        if (level != 1) {
+            this.addWindow(width/2, height/1.662);
+            this.addWindow(width/2, height/1.267);
+        }
 
         // row 4
         this.addWindow(width/2 + width/7.5, height/2.415);
@@ -244,12 +279,68 @@ class Play extends Phaser.Scene {
         if (!pieExists && this.rand == 1) {
             pieExists = true;
             this.pie.setAlpha(1);
-            this.randX = Phaser.Math.Between(0, 3);
-            this.randY = Phaser.Math.Between(0, 3);
+            this.randX = Phaser.Math.Between(0, 4);
+            this.randY = Phaser.Math.Between(0, 2);
             this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
             this.yPos = [2, 1.45, 1.14]
-            this.pie.x = width/2 + width/(this.xPos[this.randX]);
+            if (this.randX == 2) {
+                this.pie.x = width/2;
+            }
+            else {
+                this.pie.x = width/2 + width/(this.xPos[this.randX]);
+            }
             this.pie.y = height/(this.yPos[this.randY]);
+        }
+    }
+
+    ralphMove() {
+        this.randX = Phaser.Math.Between(0, 4);
+        this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
+        this.travel = Math.abs((ralphLocation + 1) - (this.randX + 1));
+        if (this.travel == 0) {
+            this.travel = 1;
+        }
+        ralphLocation = this.randX;
+        if (this.randX == 2) {
+            this.ralph.play('ralph_walk');
+            this.tweens.add({
+                targets: this.ralph,
+                x: width/2,
+                duration: 500 * this.travel,
+                onComplete: () => {
+                    this.time.delayedCall(800, function () {
+                        this.randBrick = Phaser.Math.Between(1, 2);
+                        this.brick.setTexture('misc', this.randBrick);
+                        this.brick.setAlpha(1);
+                        this.brick.x = this.ralph.x;
+                        this.brick.y = this.ralph.y;
+                        this.brick.setVelocityY(200);
+                    }, [], this);
+                    this.ralph.play('ralph_attack').once('animationcomplete', () => {
+                    });
+                }
+            });
+        }
+        else {
+            this.ralph.play('ralph_walk');
+            this.tweens.add({
+                targets: this.ralph,
+                x: width/2 + width/(this.xPos[this.randX]),
+                duration: 500 * this.travel,
+                onComplete: () => {
+                    this.time.delayedCall(1000, function () {
+                        this.randBrick = Phaser.Math.Between(1, 2);
+                        this.brick.setTexture('misc', this.randBrick);
+                        this.brick.setAlpha(1);
+                        this.brick.x = this.ralph.x;
+                        this.brick.y = this.ralph.y;
+                        this.brick.setVelocityY(200);
+                    }, [], this);
+                    this.ralph.play('ralph_attack').once('animationcomplete', () => {
+                        this.ralph.play('ralph_idle');
+                    });
+                }
+            });
         }
     }
 }

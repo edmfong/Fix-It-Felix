@@ -71,6 +71,11 @@ class Load extends Phaser.Scene {
             frameHeight: 32,
         });
 
+        this.load.spritesheet('Ralph', './assets/spritesheet/ralph.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
         this.load.spritesheet('hat', './assets/spritesheet/hat.png', {
             frameWidth: 32,
             frameHeight: 32,
@@ -266,6 +271,36 @@ class Load extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('hat', {
                 start: 10,
                 end: 11,
+            }),
+        });
+
+        this.anims.create({
+            key: 'ralph_walk',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Ralph', {
+                start: 0,
+                end: 3,
+            }),
+        });
+
+        this.anims.create({
+            key: 'ralph_idle',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Ralph', {
+                start: 0,
+                end: 0,
+            }),
+        });
+
+        this.anims.create({
+            key: 'ralph_attack',
+            frameRate: 5,
+            repeat: 3,
+            frames: this.anims.generateFrameNumbers('Ralph', {
+                start: 4,
+                end: 5,
             }),
         });
 
