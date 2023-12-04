@@ -16,6 +16,7 @@ class Play extends Phaser.Scene {
         gameOver = false;
         nextLevel = false;
         this.ralphFirstMove = true;
+        score = 0;
 
         if (lives == 0) {
             lives = 3;
@@ -32,10 +33,15 @@ class Play extends Phaser.Scene {
         this.blackBar.fillRect(0, 0, game.config.width, 70);
 
         // Display player lives, score, highscore (temp)
-        this.livesText = this.add.text(width - width/10, 10, 'Lives:', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
-        this.livesDisplay = this.add.text(width - width/10, 40, lives, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
-        this.scoreText = this.add.text(width/10, 10, 'Score: 0', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
-        this.highScoreText = this.add.text(width/2, 10, 'High Score: 0', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.scoreString = String(score).padStart(6, '0');
+        this.highscoreString = String(highscore).padStart(6, '0');
+
+        this.livesText = this.add.bitmapText(width - width/10, 10, 'pixelFont', 'Lives', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
+        this.livesDisplay = this.add.bitmapText(width - width/10, 40, 'pixelFont', lives, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
+        this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000);
+        this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
+        this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000);
+        this.highScoreDisplay = this.add.bitmapText(width/2, 40, 'pixelFont', this.highscoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
 
         // initalize felix
         this.felix = this.physics.add.sprite(width / 2, height / 1.81, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
@@ -113,6 +119,10 @@ class Play extends Phaser.Scene {
             right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
             space: Phaser.Input.Keyboard.KeyCodes.SPACE,
             rKey: Phaser.Input.Keyboard.KeyCodes.R,
+
+            //debug keys
+            pKey: Phaser.Input.Keyboard.KeyCodes.P,
+            oKey: Phaser.Input.Keyboard.KeyCodes.O,
         })
 
     }
@@ -121,6 +131,10 @@ class Play extends Phaser.Scene {
         if (!gameOver && !nextLevel) {
             // lives display
             this.livesDisplay.setText(lives);
+
+            // score display
+            this.scoreString = String(score).padStart(6, '0');
+            this.scoreDisplay.setText(this.scoreString);
 
             // controls
             if(cursors.left.isDown && fixing == false) {
@@ -222,6 +236,12 @@ class Play extends Phaser.Scene {
             this.whiteBar2.setDepth(12);
             this.blackBar2.setDepth(13);
             this.gameOverText = this.add.text(width/2, height/2, 'Game Over\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+        
+            if (score > highscore) {
+                highscore = score;
+                this.highScoreString = String(highscore).padStart(6, '0');
+                this.highScoreDisplay.setText(this.highScoreString);
+            }
         }
 
         if (nextLevel) {
@@ -237,6 +257,12 @@ class Play extends Phaser.Scene {
             this.whiteBar2.setDepth(12);
             this.blackBar2.setDepth(13);
             this.nextLevelText = this.add.text(width/2, height/2, 'Next Level Incomplete\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+            
+            if (score > highscore) {
+                highscore = score;
+                this.highScoreString = String(highscore).padStart(6, '0');
+                this.highScoreDisplay.setText(this.highScoreString);
+            }
         }
 
         if ((gameOver || nextLevel) && cursors.rKey.isDown) {
@@ -335,12 +361,22 @@ class Play extends Phaser.Scene {
     windowFixable(felix, window) {
         if (fixing == true) {
             if (isSuper) {
-                window.setTexture(window.texture, 4);
-                fixed = true;
+                if (window.frame.name < 4 && fixed == false) {
+                    this.initialFrame = window.frame.name;
+                    window.setTexture(window.texture, 4);
+                    fixed = true;
+                    if ((4 - this.initialFrame) == 0) {
+                        score += 4 * 100;
+                    }
+                    else {
+                        score += (4 - this.initialFrame) * 100;
+                    }
+                }
             }
             else if (window.frame.name < 4 && fixed == false) {
                 window.setTexture(window.texture, window.frame.name + 1);
                 fixed = true;
+                score += 100;
             }
         }
     }

@@ -4,6 +4,9 @@ class Load extends Phaser.Scene {
     }
 
     preload() {
+        // font
+        this.load.bitmapFont('pixelFont', './assets/font/PressStart2P.png', './assets/font/PressStart2P.xml');
+
         // loading bar from
         // https://gamedevacademy.org/creating-a-preloading-screen-in-phaser-3/#:~:text=In%20Phaser%2C%20before%20you%20can,preloader%20really%20makes%20a%20difference
         var progressBar = this.add.graphics();
@@ -18,7 +21,7 @@ class Load extends Phaser.Scene {
             y: height / 2 - 50,
             text: 'Loading...',
             style: {
-                font: '20px monospace',
+                font: 'pixelFont',
                 fill: '#ffffff'
             }
         });
@@ -29,7 +32,7 @@ class Load extends Phaser.Scene {
             y: height / 2 - 5,
             text: '0%',
             style: {
-                font: '18px monospace',
+                font: '18px pixelFont',
                 fill: '#ffffff'
             }
         });
@@ -40,7 +43,7 @@ class Load extends Phaser.Scene {
             y: height / 2 + 50,
             text: '',
             style: {
-                font: '18px monospace',
+                font: '18px pixelFont',
                 fill: '#ffffff'
             }
         });
