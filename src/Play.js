@@ -56,7 +56,7 @@ class Play extends Phaser.Scene {
         this.ralph.play('ralph_idle');
 
         // hat
-        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11).setOrigin(0.5, 1);
+        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11).setOrigin(0.5, 1).setAlpha(1);
         this.hat.setSize(16, 4).setOffset(8, 8)
 
         // pie
@@ -125,6 +125,13 @@ class Play extends Phaser.Scene {
             oKey: Phaser.Input.Keyboard.KeyCodes.O,
         })
 
+        // initialize sfx
+        this.fixSFX = this.sound.add('fix');
+        this.punchSFX = this.sound.add('punch');
+        this.jumpSFX = this.sound.add('jump');
+        this.eatSFX = this.sound.add('eat');
+        this.clickSFX = this.sound.add('click');
+        this.hitSFX = this.sound.add('hit');
     }
 
     update() {
@@ -153,13 +160,16 @@ class Play extends Phaser.Scene {
             }
 
             if (cursors.up.isDown && this.felix.body.onFloor() && fixing == false) { // jumping with directions
+                this.jumpSFX.play()
                 this.felix.setVelocityY(-200);
             }
             
             if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y >= game.config.height - this.felix.height / 2) && fixing == false) { // jumping on 1st level on ground
+                this.jumpSFX.play()
                 this.felix.setVelocityY(-375);
             }
             else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.8) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
+                this.jumpSFX.play()
                 this.felix.setVelocityY(-500);
             }
             else if(cursors.down.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
@@ -224,6 +234,12 @@ class Play extends Phaser.Scene {
         this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
 
         if (gameOver) {
+            this.felix.setVelocityX(0);
+            this.felix.setVelocityY(0);
+            this.felix.setGravityY(0);
+            this.felix.play('felix' + '_' + 'idle' + '_' + playerDirection, true);
+            this.hat.setAlpha(0);
+            
             // Create a graphics object
             this.overBar = this.add.graphics();
 
@@ -245,6 +261,13 @@ class Play extends Phaser.Scene {
         }
 
         if (nextLevel) {
+            this.felix.setVelocityX(0);
+            this.felix.setVelocityY(0);
+            this.felix.setGravityY(0);
+            this.felix.play('felix' + '_' + 'idle' + '_' + playerDirection, true);
+            this.hat.setAlpha(0);
+
+
             // Create a graphics object
             this.overBar = this.add.graphics();
 
@@ -266,6 +289,7 @@ class Play extends Phaser.Scene {
         }
 
         if ((gameOver || nextLevel) && cursors.rKey.isDown) {
+            this.clickSFX.play()
             this.scene.restart();
         }
 
@@ -361,6 +385,7 @@ class Play extends Phaser.Scene {
     windowFixable(felix, window) {
         if (fixing == true) {
             if (isSuper) {
+                this.fixSFX.play()
                 if (window.frame.name < 4 && fixed == false) {
                     this.initialFrame = window.frame.name;
                     window.setTexture(window.texture, 4);
@@ -374,6 +399,7 @@ class Play extends Phaser.Scene {
                 }
             }
             else if (window.frame.name < 4 && fixed == false) {
+                this.fixSFX.play()
                 window.setTexture(window.texture, window.frame.name + 1);
                 fixed = true;
                 score += 100;
@@ -382,12 +408,11 @@ class Play extends Phaser.Scene {
     }
 
     pieAte() {
-        console.log('pie')
         this.pie.setAlpha(0);
         this.pie.x = 0;
         this.pie.y = 0;
         isSuper = true;
-        console.log(isSuper)
+        this.eatSFX.play()
         this.time.delayedCall(5000, () => {
             pieExists = false;
             isSuper = false;
@@ -412,7 +437,7 @@ class Play extends Phaser.Scene {
     spawnPie() {
         if (!gameOver && !nextLevel) {
             // 10% to spawn pie every 5s
-            this.rand = Phaser.Math.Between(1, 10);
+            this.rand = Phaser.Math.Between(1, 1);
             if (!pieExists && this.rand == 1) {
                 pieExists = true;
                 this.pie.setAlpha(1);
@@ -438,6 +463,7 @@ class Play extends Phaser.Scene {
 
     felixHit() {
         if (!gameOver && !nextLevel) {
+            this.hitSFX.play()
             if (!isSuper) {
                 lives--;
             }
@@ -469,6 +495,7 @@ class Play extends Phaser.Scene {
                     x: width/2,
                     duration: 500 * this.travel,
                     onComplete: () => {
+                        this.punchMult()
                         this.time.delayedCall(800, function () {
                             this.randBrick = Phaser.Math.Between(1, 2);
                             this.brick.setTexture('misc', this.randBrick);
@@ -490,6 +517,7 @@ class Play extends Phaser.Scene {
                     x: width/2 + width/(this.xPos[this.randX]),
                     duration: 500 * this.travel,
                     onComplete: () => {
+                        this.punchMult()
                         this.time.delayedCall(1000, function () {
                             this.randBrick = Phaser.Math.Between(1, 2);
                             this.brick.setTexture('misc', this.randBrick);
@@ -505,5 +533,24 @@ class Play extends Phaser.Scene {
                 });
             }
         }
+    }
+
+    punchMult() {
+        this.punchSFX.play()
+        this.time.delayedCall(250, () => {
+            this.punchSFX.play()
+        });
+        this.time.delayedCall(500, () => {
+            this.punchSFX.play()
+        });
+        this.time.delayedCall(750, () => {
+            this.punchSFX.play()
+        });
+        this.time.delayedCall(1000, () => {
+            this.punchSFX.play()
+        });
+        this.time.delayedCall(1250, () => {
+            this.punchSFX.play()
+        });
     }
 }

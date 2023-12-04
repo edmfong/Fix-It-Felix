@@ -26,10 +26,13 @@ class Menu extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+
+        this.clickSFX = this.sound.add('click');
     }
 
     update() {
         if (this.spaceKey.isDown) {
+            this.clickSFX.play()
             this.scene.start('playScene');
         }
     }

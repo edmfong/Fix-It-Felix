@@ -2,10 +2,7 @@
 // Name: Edwin Fong
 // Date: 12/15/23
 
-// approximate hours spent: 25
-// creative tilt:
-// tweens for falling animation, created custom headers, changed css to center and customize background,
-// spawning multiple objects with different textures and sfx
+// sfx: zapsplat
 
 "use strict"
 

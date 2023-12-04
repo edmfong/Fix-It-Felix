@@ -111,13 +111,13 @@ class Load extends Phaser.Scene {
         this.load.image('menu', './assets/menu.png')
 
         // load sfx + bgm
-        // this.load.audio('bgm', './assets/sfx/bgm.mp3');
-        // this.load.audio('click', './assets/sfx/click.mp3');
-        // this.load.audio('crunch', './assets/sfx/crunch.mp3');
-        // this.load.audio('jump', './assets/sfx/jump.mp3');
-        // this.load.audio('spray', './assets/sfx/spray.mp3');
-        // this.load.audio('squish', './assets/sfx/squish.wav');
-        // this.load.audio('thud', './assets/sfx/thud.mp3');
+        this.load.audio('punch', './assets/sfx/punch.mp3');
+        this.load.audio('fix', './assets/sfx/fix.mp3');
+        this.load.audio('jump', './assets/sfx/jump.mp3');
+        this.load.audio('click', './assets/sfx/click.mp3');
+        this.load.audio('hit', './assets/sfx/hit.mp3');
+        this.load.audio('eat', './assets/sfx/eat.mp3');
+
     }
 
     create() {
