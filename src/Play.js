@@ -15,15 +15,17 @@ class Play extends Phaser.Scene {
         this.blackBar.fillRect(0, 0, game.config.width, 70);
 
         // Display player lives, score, highscore (temp)
-        this.livesText = this.add.text(width - width/10, 10, `Lives: ${lives}`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
-        this.scoreText = this.add.text(width/10, 10, `Score: 0`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
-        this.highScoreText = this.add.text(width/2, 10, `High Score: 0`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.livesText = this.add.text(width - width/10, 10, 'Lives:', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.livesDisplay = this.add.text(width - width/10, 40, lives, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.scoreText = this.add.text(width/10, 10, 'Score: 0', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.highScoreText = this.add.text(width/2, 10, 'High Score: 0', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
 
         // initalize felix
         this.felix = this.physics.add.sprite(width / 2, height / 3, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
         this.felix.setGravityY(1000);
         this.felix.body.setCollideWorldBounds(true);
-        this.felix.setSize(4, 24).setOffset(14, 8)
+        this.felix.setSize(4, 24).setOffset(14, 8);
+        this.felix.setBounce(0).setFriction(0);
         this.felix.play('felix_idle_left');
 
         // initalize ralph
@@ -36,9 +38,11 @@ class Play extends Phaser.Scene {
 
         // pie
         this.pie = this.physics.add.sprite(0, 0, 'misc', 0).setScale(3.5).setDepth(11).setOrigin(0.5, 0).setAlpha(0);
+        this.pie.setImmovable();
 
         // brick
         this.brick = this.physics.add.sprite(0, 0, 'misc', 1).setScale(4).setDepth(10).setOrigin(0.5, 0).setAlpha(0);
+        this.brick.setImmovable();
 
         // change colors
         this.superCheckTimer = this.time.addEvent({
@@ -78,6 +82,8 @@ class Play extends Phaser.Scene {
 
         // coliders
         this.physics.add.collider(this.felix, this.platformGroup);
+        this.physics.add.overlap(this.hat, this.brick, this.felixHit, null, this);
+        this.physics.add.overlap(this.felix, this.pie, this.pieAte, null, this);
         this.physics.add.overlap(this.felix, this.windowGroup, this.windowFixable, null, this);
 
         // initialize controls
@@ -93,89 +99,92 @@ class Play extends Phaser.Scene {
     }
 
     update() {
+        if (!gameOver && !nextLevel) {
+            // lives display
+            this.livesDisplay.setText(lives);
+
+            // controls
+            if(cursors.left.isDown && fixing == false) {
+                this.felix.setVelocityX(-speed)
+                playerMovement = 'walk';
+                playerDirection = 'left';
+            }
+            else if(cursors.right.isDown && fixing == false) {
+                this.felix.setVelocityX(speed)
+                playerMovement = 'walk';
+                playerDirection = 'right';
+            }
+            else if (fixing == false) {
+                playerMovement = 'idle';
+                this.felix.setVelocityX(0)
+            }
+
+            if (cursors.up.isDown && this.felix.body.onFloor() && fixing == false) { // jumping with directions
+                this.felix.setVelocityY(-200);
+            }
+            
+            if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y >= game.config.height - this.felix.height / 2) && fixing == false) { // jumping on 1st level on ground
+                this.felix.setVelocityY(-375);
+            }
+            else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.8) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
+                this.felix.setVelocityY(-500);
+            }
+            else if(cursors.down.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
+                this.platformGroup.children.iterate(function(platform) {
+                    platform.body.checkCollision.up = false;
+                });
+                this.time.delayedCall(100, () => {
+                    this.platformGroup.children.iterate(function(platform) {
+                        platform.body.checkCollision.up = true;
+                    });
+                });
+            }
+
+            if (cursors.space.isDown && !this.prevSpaceDown && fixOnCD == false && this.felix.body.onFloor()) {
+                fixOnCD = true;
+                fixing = true;
+                this.felix.setVelocityX(0)
+                if (playerDirection == 'right'){
+                    playerMovement = 'fix';
+                }
+                else if (playerDirection = 'left'){
+                    playerMovement = 'fix';
+                }
+                this.time.delayedCall(400, () => {
+                    fixOnCD = false;
+                    fixing = false;
+                    fixed = false;
+                });
+            }
+
+            // change animations
+            this.felix.play('felix' + '_' + playerMovement + '_' + playerDirection, true);
+            this.hat.play('hat' + '_' + playerMovement + '_' + playerDirection, true);
+
+            // every window is fixed
+            if (this.windowGroup.getChildren().every(window => window.frame.name == 4)) {
+                nextLevel = true;
+                console.log('next level');
+            }
+
+            // destroy bricks out of screen
+            if (this.brick.y > game.config.height || this.brick.y < 0) {
+                this.brick.setAlpha(0);
+                this.brick.setVelocityY(0);
+                this.brick.x = 0;
+                this.brick.y = 0;
+            }
+
+            // change hat color
+            if (isSuper) {
+                this.superCondition();
+            }
+        }
+
         // hat
         this.hat.x = this.felix.x;
         this.hat.y = this.felix.y;
-
-        // controls
-        if(cursors.left.isDown && fixing == false) {
-            this.felix.setVelocityX(-speed)
-            playerMovement = 'walk';
-            playerDirection = 'left';
-        }
-        else if(cursors.right.isDown && fixing == false) {
-            this.felix.setVelocityX(speed)
-            playerMovement = 'walk';
-            playerDirection = 'right';
-        }
-        else if (fixing == false) {
-            playerMovement = 'idle';
-            this.felix.setVelocityX(0)
-        }
-
-        if (cursors.up.isDown && this.felix.body.onFloor() && fixing == false) { // jumping with directions
-            this.felix.setVelocityY(-200);
-        }
-        
-        if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y >= game.config.height - this.felix.height / 2) && fixing == false) { // jumping on 1st level on ground
-            console.log(height/5)
-            this.felix.setVelocityY(-375);
-        }
-        else if(cursors.up.isDown && this.felix.body.onFloor() && (this.felix.y > height/1.8) && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) { // jumping only
-            this.felix.setVelocityY(-500);
-        }
-        else if(cursors.down.isDown && this.felix.body.onFloor() && !(cursors.left.isDown || cursors.right.isDown) && fixing == false) {
-            this.platformGroup.children.iterate(function(platform) {
-                platform.body.checkCollision.up = false;
-            });
-            this.time.delayedCall(100, () => {
-                this.platformGroup.children.iterate(function(platform) {
-                    platform.body.checkCollision.up = true;
-                });
-            });
-        }
-
-        if (cursors.space.isDown && !this.prevSpaceDown && fixOnCD == false && this.felix.body.onFloor()) {
-            fixOnCD = true;
-            fixing = true;
-            this.felix.setVelocityX(0)
-            if (playerDirection == 'right'){
-                playerMovement = 'fix';
-            }
-            else if (playerDirection = 'left'){
-                playerMovement = 'fix';
-            }
-            this.time.delayedCall(400, () => {
-                fixOnCD = false;
-                fixing = false;
-                fixed = false;
-            });
-        }
-
-        // change animations
-        this.felix.play('felix' + '_' + playerMovement + '_' + playerDirection, true);
-        this.hat.play('hat' + '_' + playerMovement + '_' + playerDirection, true);
-
-        // debugging
-        if (cursors.dKey.isDown) {
-            isSuper = true;
-        }
-        else {
-            isSuper = false;
-        }
-
-        // every window is fixed
-        if (this.windowGroup.getChildren().every(window => window.frame.name == 4)) {
-            //console.log('yippe');
-        }
-
-        // destroy bricks out of screen
-        if (this.brick.y > game.config.height || this.brick.y < 0) {
-            this.brick.setAlpha(0);
-            this.brick.setVelocityY(0);
-            this.brick.x = 0;
-            this.brick.y = 0;
-        }
+        this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
 
     }
 
@@ -268,17 +277,39 @@ class Play extends Phaser.Scene {
 
     windowFixable(felix, window) {
         if (fixing == true) {
-            if (window.frame.name < 4 && fixed == false) {
+            if (isSuper) {
+                window.setTexture(window.texture, 4);
+                fixed = true;
+            }
+            else if (window.frame.name < 4 && fixed == false) {
                 window.setTexture(window.texture, window.frame.name + 1);
                 fixed = true;
             }
         }
     }
 
+    pieAte() {
+        console.log('pie')
+        this.pie.setAlpha(0);
+        this.pie.x = 0;
+        this.pie.y = 0;
+        isSuper = true;
+        console.log(isSuper)
+        this.time.delayedCall(5000, () => {
+            pieExists = false;
+            isSuper = false;
+        });
+    }
+
     superCondition() {
-        if (isSuper) {
-            const color = Phaser.Display.Color.RandomRGB();
-            this.hat.setTint(color.color);
+        if (!gameOver && !nextLevel) {
+            if (isSuper) {
+                const color = Phaser.Display.Color.RandomRGB();
+                this.hat.setTint(color.color);
+            }
+            else {
+                this.hat.clearTint();
+            }
         }
         else {
             this.hat.clearTint();
@@ -286,72 +317,96 @@ class Play extends Phaser.Scene {
     }
 
     spawnPie() {
-        this.rand = Phaser.Math.Between(1, 10);
-        if (!pieExists && this.rand == 1) {
-            pieExists = true;
-            this.pie.setAlpha(1);
-            this.randX = Phaser.Math.Between(0, 4);
-            this.randY = Phaser.Math.Between(0, 2);
-            this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
-            this.yPos = [2, 1.45, 1.14]
-            if (this.randX == 2) {
-                this.pie.x = width/2;
+        if (!gameOver && !nextLevel) {
+            // 10% to spawn pie every 5s
+            this.rand = Phaser.Math.Between(1, 10);
+            if (!pieExists && this.rand == 1) {
+                pieExists = true;
+                this.pie.setAlpha(1);
+                this.randX = Phaser.Math.Between(0, 4);
+                this.randY = Phaser.Math.Between(0, 2);
+                this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
+                this.yPos = [2, 1.45, 1.14]
+                if (level == 1) {
+                    if (this.randX == 2) {
+                        this.randX = 1;
+                    }
+                }
+                if (this.randX == 2) {
+                    this.pie.x = width/2;
+                }
+                else {
+                    this.pie.x = width/2 + width/(this.xPos[this.randX]);
+                }
+                this.pie.y = height/(this.yPos[this.randY]);
             }
-            else {
-                this.pie.x = width/2 + width/(this.xPos[this.randX]);
-            }
-            this.pie.y = height/(this.yPos[this.randY]);
         }
     }
 
+    felixHit() {
+        if (!gameOver && !nextLevel) {
+            if (!isSuper) {
+                lives--;
+            }
+        }
+        // reset brick
+        this.brick.setAlpha(0);
+        this.brick.setVelocityY(0);
+        this.brick.x = 0;
+        this.brick.y = 0;
+    }
+
     ralphMove() {
-        this.randX = Phaser.Math.Between(0, 4);
-        this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
-        this.travel = Math.abs((ralphLocation + 1) - (this.randX + 1));
-        if (this.travel == 0) {
-            this.travel = 1;
-        }
-        ralphLocation = this.randX;
-        if (this.randX == 2) {
-            this.ralph.play('ralph_walk');
-            this.tweens.add({
-                targets: this.ralph,
-                x: width/2,
-                duration: 500 * this.travel,
-                onComplete: () => {
-                    this.time.delayedCall(800, function () {
-                        this.randBrick = Phaser.Math.Between(1, 2);
-                        this.brick.setTexture('misc', this.randBrick);
-                        this.brick.setAlpha(1);
-                        this.brick.x = this.ralph.x;
-                        this.brick.y = this.ralph.y;
-                        this.brick.setVelocityY(200);
-                    }, [], this);
-                    this.ralph.play('ralph_attack').once('animationcomplete', () => {
-                    });
-                }
-            });
-        }
-        else {
-            this.ralph.play('ralph_walk');
-            this.tweens.add({
-                targets: this.ralph,
-                x: width/2 + width/(this.xPos[this.randX]),
-                duration: 500 * this.travel,
-                onComplete: () => {
-                    this.time.delayedCall(1000, function () {
-                        this.randBrick = Phaser.Math.Between(1, 2);
-                        this.brick.setTexture('misc', this.randBrick);
-                        this.brick.setAlpha(1);
-                        this.brick.x = this.ralph.x;
-                        this.brick.y = this.ralph.y;
-                        this.brick.setVelocityY(200);
-                    }, [], this);
-                    this.ralph.play('ralph_attack').once('animationcomplete', () => {
-                        this.ralph.play('ralph_idle');
-                    });
-                }
-            });
+        if (!gameOver && !nextLevel) {
+            this.randX = Phaser.Math.Between(0, 4);
+            this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
+            this.travel = Math.abs((ralphLocation + 1) - (this.randX + 1));
+            if (this.travel == 0) {
+                this.travel = 1;
+            }
+            ralphLocation = this.randX;
+            if (this.randX == 2) {
+                this.ralph.play('ralph_walk');
+                this.tweens.add({
+                    targets: this.ralph,
+                    x: width/2,
+                    duration: 500 * this.travel,
+                    onComplete: () => {
+                        this.time.delayedCall(800, function () {
+                            this.randBrick = Phaser.Math.Between(1, 2);
+                            this.brick.setTexture('misc', this.randBrick);
+                            this.brick.setAlpha(1);
+                            this.brick.x = this.ralph.x;
+                            this.brick.y = this.ralph.y;
+                            this.brick.setVelocityY(200);
+                        }, [], this);
+                        this.ralph.play('ralph_attack').once('animationcomplete', () => {
+                            this.ralph.play('ralph_idle');
+                        });
+                    }
+                });
+            }
+            else {
+                this.ralph.play('ralph_walk');
+                this.tweens.add({
+                    targets: this.ralph,
+                    x: width/2 + width/(this.xPos[this.randX]),
+                    duration: 500 * this.travel,
+                    onComplete: () => {
+                        this.time.delayedCall(1000, function () {
+                            this.randBrick = Phaser.Math.Between(1, 2);
+                            this.brick.setTexture('misc', this.randBrick);
+                            this.brick.setAlpha(1);
+                            this.brick.x = this.ralph.x;
+                            this.brick.y = this.ralph.y;
+                            this.brick.setVelocityY(200);
+                        }, [], this);
+                        this.ralph.play('ralph_attack').once('animationcomplete', () => {
+                            this.ralph.play('ralph_idle');
+                        });
+                    }
+                });
+            }
         }
     }
 }
