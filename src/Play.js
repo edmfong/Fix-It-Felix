@@ -385,8 +385,8 @@ class Play extends Phaser.Scene {
     windowFixable(felix, window) {
         if (fixing == true) {
             if (isSuper) {
-                this.fixSFX.play()
                 if (window.frame.name < 4 && fixed == false) {
+                    this.fixSFX.play()
                     this.initialFrame = window.frame.name;
                     window.setTexture(window.texture, 4);
                     fixed = true;
@@ -437,7 +437,7 @@ class Play extends Phaser.Scene {
     spawnPie() {
         if (!gameOver && !nextLevel) {
             // 10% to spawn pie every 5s
-            this.rand = Phaser.Math.Between(1, 1);
+            this.rand = Phaser.Math.Between(1, 10);
             if (!pieExists && this.rand == 1) {
                 pieExists = true;
                 this.pie.setAlpha(1);
