@@ -65,7 +65,6 @@ class Load extends Phaser.Scene {
         });
 
         // load assets
-        // this.load.atlas('Saitama', './assets/Saitama.png', './assets/Saitama.json');
         this.load.spritesheet('Felix', './assets/spritesheet/felix.png', {
             frameWidth: 32,
             frameHeight: 32,
@@ -105,29 +104,8 @@ class Load extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16,
         });
-        // this.load.spritesheet('Kamakyuri', './assets/spritesheets/Kamakyuri.png', {
-        //     frameWidth: 32,
-        //     frameHeight: 32,
-        // });
-        // this.load.spritesheet('Slugrus', './assets/spritesheets/Slugrus.png', {
-        //     frameWidth: 32,
-        //     frameHeight: 32,
-        // });
-        // this.load.spritesheet('mosquito', './assets/spritesheets/mosquito.png', {
-        //     frameWidth: 32,
-        //     frameHeight: 32,
-        // });
-        // this.load.spritesheet('buttons', './assets/spritesheets/buttons.png', {
-        //     frameWidth: 64,
-        //     frameHeight: 16,
-        // });
-        // this.load.spritesheet('headers', './assets/spritesheets/headers.png', {
-        //     frameWidth: 128,
-        //     frameHeight: 8,
-        // });
-        // this.load.image('ground', './assets/spritesheets/ground.png');
-        // this.load.image('spray', './assets/spritesheets/spray.png');
-        // this.load.image('cone', './assets/spritesheets/cone.png');
+
+        this.load.image('menu', './assets/menu.png')
 
         // load sfx + bgm
         // this.load.audio('bgm', './assets/sfx/bgm.mp3');
@@ -140,18 +118,6 @@ class Load extends Phaser.Scene {
     }
 
     create() {
-        // animation
-        //this.textures.addSpriteSheetFromAtlas()
-        // this.anims.create({
-        //     key: 'run',
-        //     frameRate: 5,
-        //     repeat: -1,
-        //     frames: this.anims.generateFrameNames('Saitama', {
-        //         prefix: 'Saitama_Run00',
-        //         end: 3,
-        //     }),
-        // });
-
         // felix animations
         this.anims.create({
             key: 'felix_idle_right',
@@ -304,48 +270,7 @@ class Load extends Phaser.Scene {
             }),
         });
 
-        // this.anims.create({
-        //     key: 'Kabuto_idle',
-        //     frameRate: 5,
-        //     repeat: -1,
-        //     frames: this.anims.generateFrameNumbers('Kabuto', {
-        //         start: 0,
-        //         end: 1,
-        //     }),
-        // });
-
-        // this.anims.create({
-        //     key: 'Kamakyuri_idle',
-        //     frameRate: 5,
-        //     repeat: -1,
-        //     frames: this.anims.generateFrameNumbers('Kamakyuri', {
-        //         start: 0,
-        //         end: 1,
-        //     }),
-        // });
-
-        // this.anims.create({
-        //     key: 'Slugrus_idle',
-        //     frameRate: 5,
-        //     repeat: -1,
-        //     frames: this.anims.generateFrameNumbers('Slugrus', {
-        //         start: 0,
-        //         end: 1,
-        //     }),
-        // });
-
-        // this.anims.create({
-        //     key: 'mosquito_fly',
-        //     frameRate: 3,
-        //     repeat: -1,
-        //     frames: this.anims.generateFrameNumbers('mosquito', {
-        //         start: 0,
-        //         end: 1,
-        //     }),
-        // });
-
-        // this.scene.start('gameOverScene');
-        // this.scene.start('instructionsScene');
-        this.scene.start('playScene');
+        // finished loading
+        this.scene.start('menuScene');
     }
 }

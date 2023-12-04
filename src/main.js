@@ -24,7 +24,7 @@ let config = {
     width: 640,
     height: 640,
     backgroundColor: '#000000',
-    scene: [ Load, Play ],
+    scene: [ Load, Menu, Play ],
 }
 
 let game = new Phaser.Game(config)
@@ -47,6 +47,7 @@ let fixing = false;
 let fixed = false;
 let pieExists = false;
 let ralphLocation = 2;
+let lives = 3;
 // let velocity = 450;
 // let skySpeed = 1;
 // let buildingSpeed = 0.5;

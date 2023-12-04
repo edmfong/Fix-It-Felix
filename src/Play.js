@@ -7,6 +7,18 @@ class Play extends Phaser.Scene {
         // initialize building
         this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 0).setScale(5);
 
+        // Create a graphics object
+        this.statsBar = this.add.graphics();
+
+        // Draw a black rectangle at the top of the screen
+        this.blackBar = this.statsBar.fillStyle(0x000000, 1);
+        this.blackBar.fillRect(0, 0, game.config.width, 70);
+
+        // Display player lives, score, highscore (temp)
+        this.livesText = this.add.text(width - width/10, 10, `Lives: ${lives}`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.scoreText = this.add.text(width/10, 10, `Score: 0`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+        this.highScoreText = this.add.text(width/2, 10, `High Score: 0`, { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
+
         // initalize felix
         this.felix = this.physics.add.sprite(width / 2, height / 3, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
         this.felix.setGravityY(1000);
@@ -16,9 +28,6 @@ class Play extends Phaser.Scene {
 
         // initalize ralph
         this.ralph = this.physics.add.sprite(width / 2, height / 2.9, 'Ralph', 0).setScale(4).setDepth(10).setOrigin(0.5, 1);
-        //this.ralph.setGravityY(1000);
-        // this.ralph.body.setCollideWorldBounds(true);
-        // this.ralph.setSize(4, 24).setOffset(14, 8)
         this.ralph.play('ralph_idle');
 
         // hat
@@ -202,12 +211,14 @@ class Play extends Phaser.Scene {
     addPlatform(x, y) {
         let platform = new Platform(this, x, y, 'obstacle');
         if (level == 1 && x == width/2 && y == height/1.53) {
-            platform.setSize(22.5, 4).setOffset(-3, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
+            platform.setSize(20, 4).setOffset(-2, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
         }
         else {
             platform.setSize(15, 4).setOffset(0.5, 13).setScale(4).setOrigin(0.5, 0).setAlpha(0);
         }
         platform.body.checkCollision.down = false;
+        platform.body.checkCollision.left = false;
+        platform.body.checkCollision.right = false;
         this.platformGroup.add(platform);     
     }
 
@@ -249,7 +260,7 @@ class Play extends Phaser.Scene {
         else {
             texture = 'window_2'
         }
-        this.randFrame = Phaser.Math.Between(0, 4);
+        this.randFrame = Phaser.Math.Between(0, 3);
         let window = new Window(this, x, y, texture, this.randFrame);
         window.setSize(6, 9).setOffset(5, 7).setScale(5).setOrigin(0.5, 0).setAlpha(1);
         this.windowGroup.add(window);     
