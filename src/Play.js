@@ -4,6 +4,23 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+        // set variables
+        playerDirection = 'left';
+        playerMovement = 'idle';
+        isSuper = false;
+        fixOnCD = false;
+        fixing = false;
+        fixed = false;
+        pieExists = false;
+        ralphLocation = 2;
+        gameOver = false;
+        nextLevel = false;
+        this.ralphFirstMove = true;
+
+        if (lives == 0) {
+            lives = 3;
+        }
+
         // initialize building
         this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 0).setScale(5);
 
@@ -21,7 +38,7 @@ class Play extends Phaser.Scene {
         this.highScoreText = this.add.text(width/2, 10, 'High Score: 0', { fontSize: '24px', fill: '#fff' }).setScrollFactor(0).setOrigin(0.5, 0);
 
         // initalize felix
-        this.felix = this.physics.add.sprite(width / 2, height / 3, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
+        this.felix = this.physics.add.sprite(width / 2, height / 1.81, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
         this.felix.setGravityY(1000);
         this.felix.body.setCollideWorldBounds(true);
         this.felix.setSize(4, 24).setOffset(14, 8);
@@ -60,6 +77,8 @@ class Play extends Phaser.Scene {
             loop: true
         });
 
+        // move ralph and attack
+        this.ralphMove();
         this.ralphAttack = this.time.addEvent({
             delay: 4000,
             callback: this.ralphMove,
@@ -93,7 +112,7 @@ class Play extends Phaser.Scene {
             left: Phaser.Input.Keyboard.KeyCodes.LEFT,
             right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
             space: Phaser.Input.Keyboard.KeyCodes.SPACE,
-            dKey: Phaser.Input.Keyboard.KeyCodes.D, // debugging
+            rKey: Phaser.Input.Keyboard.KeyCodes.R,
         })
 
     }
@@ -164,7 +183,11 @@ class Play extends Phaser.Scene {
             // every window is fixed
             if (this.windowGroup.getChildren().every(window => window.frame.name == 4)) {
                 nextLevel = true;
-                console.log('next level');
+            }
+
+            // no lives
+            if (lives == 0) {
+                gameOver = true;
             }
 
             // destroy bricks out of screen
@@ -185,6 +208,40 @@ class Play extends Phaser.Scene {
         this.hat.x = this.felix.x;
         this.hat.y = this.felix.y;
         this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
+
+        if (gameOver) {
+            // Create a graphics object
+            this.overBar = this.add.graphics();
+
+            // Draw a black rectangle at the top of the screen
+            this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
+            this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
+            this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
+            this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
+            
+            this.whiteBar2.setDepth(12);
+            this.blackBar2.setDepth(13);
+            this.gameOverText = this.add.text(width/2, height/2, 'Game Over\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+        }
+
+        if (nextLevel) {
+            // Create a graphics object
+            this.overBar = this.add.graphics();
+
+            // Draw a black rectangle at the top of the screen
+            this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
+            this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
+            this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
+            this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
+            
+            this.whiteBar2.setDepth(12);
+            this.blackBar2.setDepth(13);
+            this.nextLevelText = this.add.text(width/2, height/2, 'Next Level Incomplete\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+        }
+
+        if ((gameOver || nextLevel) && cursors.rKey.isDown) {
+            this.scene.restart();
+        }
 
     }
 
@@ -360,6 +417,10 @@ class Play extends Phaser.Scene {
         if (!gameOver && !nextLevel) {
             this.randX = Phaser.Math.Between(0, 4);
             this.xPos = [-3.77, -7.5, 0, 3.77, 7.5];
+            if (this.ralphFirstMove && this.randX == 2) {
+                this.randX = 3;
+            }
+            this.ralphFirstMove = false
             this.travel = Math.abs((ralphLocation + 1) - (this.randX + 1));
             if (this.travel == 0) {
                 this.travel = 1;
