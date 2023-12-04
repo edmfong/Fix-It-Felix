@@ -28,10 +28,6 @@ let game = new Phaser.Game(config)
 let cursors
 let { height, width } = game.config
 
-// let spaceBar;
-// let keyUP;
-// let keyR;
-// let groundLevel = height  - 190;
 let centerX = game.config.width/2;
 let centerY = game.config.height/2;
 let level = 1;
@@ -49,10 +45,3 @@ let score = 0;
 let highscore = 0;
 let gameOver = false;
 let nextLevel = false;
-// let velocity = 450;
-// let skySpeed = 1;
-// let buildingSpeed = 0.5;
-// let gameOver = false;
-// let killedBy;
-// let time = 0;
-// let highScore = 0;
