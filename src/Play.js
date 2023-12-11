@@ -355,9 +355,11 @@ class Play extends Phaser.Scene {
                                     targets: this.ralph,
                                     y: 0,
                                     duration: 1000,
+                                    ease: 'Power2',
                                     onComplete: () => {
                                         this.tweens.add({
                                             targets: this.felix,
+                                            ease: 'Power2',
                                             y: 0,
                                             duration: 1000,
                                             onComplete: () => {
@@ -493,6 +495,18 @@ class Play extends Phaser.Scene {
         let window = new Window(this, x, y, texture, this.randFrame);
         window.setSize(6, 9).setOffset(5, 7).setScale(5).setOrigin(0.5, 0).setAlpha(1);
         this.windowGroup.add(window);     
+    }
+
+    breakWindow() {
+        this.windowGroup.getChildren().forEach(window => {
+            this.rand = Phaser.Math.Between(1, (70 - level*10));
+            if (this.rand == 1) {
+                if (window.frame.name > 0) {
+                    window.setTexture(window.texture, window.frame.name - 1);
+                }
+            }
+        });
+
     }
 
     windowFixable(felix, window) {
@@ -640,6 +654,7 @@ class Play extends Phaser.Scene {
                     x: width/2,
                     duration: 500 * this.travel,
                     onComplete: () => {
+                        this.breakWindow()
                         this.punchMult()
                         this.time.delayedCall(800, function () {
                             this.randBrick = Phaser.Math.Between(1, 2);
@@ -662,6 +677,7 @@ class Play extends Phaser.Scene {
                     x: width/2 + width/(this.xPos[this.randX]),
                     duration: 500 * this.travel,
                     onComplete: () => {
+                        this.breakWindow()
                         this.punchMult()
                         this.time.delayedCall(1000, function () {
                             this.randBrick = Phaser.Math.Between(1, 2);
