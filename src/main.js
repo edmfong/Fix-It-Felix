@@ -35,6 +35,7 @@ let speed = 200;
 let playerDirection = 'left';
 let playerMovement = 'idle';
 let isSuper = false;
+let immune = false;
 let fixOnCD = false;
 let fixing = false;
 let fixed = false;

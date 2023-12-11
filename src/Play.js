@@ -7,7 +7,8 @@ class Play extends Phaser.Scene {
         // set variables
         playerDirection = 'left';
         playerMovement = 'idle';
-        isSuper = true;
+        isSuper = false;
+        immune = false;
         fixOnCD = false;
         fixing = false;
         fixed = false;
@@ -20,6 +21,7 @@ class Play extends Phaser.Scene {
 
         if (lives == 0) {
             lives = 3;
+            level = 1
         }
 
         // initialize building
@@ -49,12 +51,24 @@ class Play extends Phaser.Scene {
         this.highScoreDisplay = this.add.bitmapText(width/2, 40, 'pixelFont', this.highscoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
 
         // initalize felix
-        this.felix = this.physics.add.sprite(width / 2, height / 1.81, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
+        if (level == 1) {
+            this.felix = this.physics.add.sprite(width / 2, height / 1, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
+        }
+        else {
+            this.felix = this.physics.add.sprite(width / 2, height / 1.1, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
+        }
         this.felix.setGravityY(1000);
-        this.felix.body.setCollideWorldBounds(true);
         this.felix.setSize(4, 24).setOffset(14, 8);
+        this.felix.body.setCollideWorldBounds(true);
         this.felix.setBounce(0).setFriction(0);
         this.felix.play('felix_idle_left');
+        if (level == 1) {
+            this.physics.world.setBounds(0, 0, width, height, true, true, true, true)
+        }
+        else {
+            this.physics.world.setBounds(0, 0, width, height, true, true, true, false)
+        }
+        
 
         // initalize ralph
         this.ralph = this.physics.add.sprite(width / 2, height / 2.9, 'Ralph', 0).setScale(4).setDepth(10).setOrigin(0.5, 1);
@@ -126,7 +140,7 @@ class Play extends Phaser.Scene {
         // coliders
         this.physics.add.collider(this.felix, this.platformGroup);
         this.physics.add.collider(this.felix, this.windowcoverGroup, function () {
-            this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
+        this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
             this.hat.x = this.felix.x;
             this.hat.y = this.felix.y;
         }, null, this);
@@ -250,6 +264,19 @@ class Play extends Phaser.Scene {
             if (isSuper) {
                 this.superCondition();
                 this.hat.setAlpha(1);
+            }
+
+            // fell down
+            if (this.felix.y > height + this.felix.height) {
+                this.felix.x = width / 2
+                this.felix.y = height / 1.1;
+                immune = true;
+                this.immuneCondition();
+                lives--;
+                this.time.delayedCall(2000, () => {
+                    immune = false;
+                    this.immuneCondition();
+                });
             }
         }
 
@@ -474,6 +501,29 @@ class Play extends Phaser.Scene {
         }
     }
 
+    immuneCondition() {
+        if (!gameOver && !nextLevel) {
+            this.immuneEvent;
+            if (immune) {
+                this.immuneEvent = this.time.addEvent({
+                    delay: 200,
+                    callback: function () {
+                        this.felix.alpha = (this.felix.alpha === 0) ? 1 : 0;
+                    },
+                    callbackScope: this,
+                    loop: true,
+                });
+            }
+            else {
+                this.immuneEvent.remove();
+                this.felix.alpha = 1;
+            }
+        }
+        else {
+            this.felix.setAlpha(1);
+        }
+    }
+
     spawnPie() {
         if (!gameOver && !nextLevel) {
             // 10% to spawn pie every 5s
@@ -503,16 +553,24 @@ class Play extends Phaser.Scene {
 
     felixHit() {
         if (!gameOver && !nextLevel) {
-            this.hitSFX.play()
-            if (!isSuper) {
-                lives--;
+            if (!immune) {
+                this.hitSFX.play()
+                if (!isSuper) {
+                    immune = true;
+                    this.immuneCondition();
+                    lives--;
+                    this.time.delayedCall(2000, () => {
+                        immune = false;
+                        this.immuneCondition();
+                    });
+                }
+                // reset brick
+                this.brick.setAlpha(0);
+                this.brick.setVelocityY(0);
+                this.brick.x = 0;
+                this.brick.y = 0;
             }
         }
-        // reset brick
-        this.brick.setAlpha(0);
-        this.brick.setVelocityY(0);
-        this.brick.x = 0;
-        this.brick.y = 0;
     }
 
     ralphMove() {
@@ -657,7 +715,9 @@ class Play extends Phaser.Scene {
             }
             else {
                 let flowerpot = new Flowerpot(this, x, height/this.flowerpotY[y-1], 'obstacle');
-                    flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0);
+                flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0);
+                flowerpot.body.checkCollision.left = false;
+                flowerpot.body.checkCollision.right = false;
                 this.flowerpotGroup.add(flowerpot);  
             }
         }
