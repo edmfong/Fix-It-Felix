@@ -46,3 +46,4 @@ let score = 0;
 let highscore = 0;
 let gameOver = false;
 let nextLevel = false;
+let transitioning = false;

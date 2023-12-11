@@ -7,8 +7,8 @@ class Play extends Phaser.Scene {
         // set variables
         playerDirection = 'left';
         playerMovement = 'idle';
-        isSuper = false;
-        immune = false;
+        isSuper = true;
+        immune = true;
         fixOnCD = false;
         fixing = false;
         fixed = false;
@@ -16,9 +16,11 @@ class Play extends Phaser.Scene {
         ralphLocation = 2;
         gameOver = false;
         nextLevel = false;
+        transitioning = false;
         this.ralphFirstMove = true;
         score = 0;
 
+        // temp gameover reset
         if (lives == 0) {
             lives = 3;
             level = 1
@@ -38,17 +40,18 @@ class Play extends Phaser.Scene {
         // Draw a black rectangle at the top of the screen
         this.blackBar = this.statsBar.fillStyle(0x000000, 1);
         this.blackBar.fillRect(0, 0, game.config.width, 70);
+        this.blackBar.setDepth(90);
 
         // Display player lives, score, highscore (temp)
         this.scoreString = String(score).padStart(6, '0');
         this.highscoreString = String(highscore).padStart(6, '0');
 
-        this.livesText = this.add.bitmapText(width - width/10, 10, 'pixelFont', 'Lives', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
-        this.livesDisplay = this.add.bitmapText(width - width/10, 40, 'pixelFont', lives, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
-        this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000);
-        this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
-        this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000);
-        this.highScoreDisplay = this.add.bitmapText(width/2, 40, 'pixelFont', this.highscoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
+        this.livesText = this.add.bitmapText(width - width/10, 10, 'pixelFont', 'Lives', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
+        this.livesDisplay = this.add.bitmapText(width - width/10, 40, 'pixelFont', lives, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
+        this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
+        this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
+        this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
+        this.highScoreDisplay = this.add.bitmapText(width/2, 40, 'pixelFont', this.highscoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
 
         // initalize felix
         if (level == 1) {
@@ -83,7 +86,7 @@ class Play extends Phaser.Scene {
         this.pie.setImmovable();
 
         // brick
-        this.brick = this.physics.add.sprite(0, 0, 'misc', 1).setScale(4).setDepth(10).setOrigin(0.5, 0).setAlpha(0);
+        this.brick = this.physics.add.sprite(0, 0, 'misc', 1).setScale(4).setDepth(80).setOrigin(0.5, 0).setAlpha(0);
         this.brick.setImmovable();
 
         // change colors
@@ -315,7 +318,9 @@ class Play extends Phaser.Scene {
             }
         }
 
-        if (nextLevel) {
+        if (nextLevel && !transitioning) {
+            console.log('nextlevel')
+            transitioning = true;
             this.felix.setVelocityX(0);
             this.felix.setVelocityY(0);
             this.felix.setGravityY(0);
@@ -324,34 +329,76 @@ class Play extends Phaser.Scene {
 
             // next level
             level++;
+            console.log(level);
 
             if (level == 5) {
                 this.scene.start('endScene');
             }
 
             else {
-                this.scene.start('playScene')
+                this.superCheckTimer.remove();
+                this.pieTimer.remove();
+                this.ralphAttack.remove();
+
+                this.felix.play('felix' + '_' + 'fix' + '_' + playerDirection, true);
+                this.ralph.play('ralph_idle');
+                this.time.delayedCall(1000, () => {
+                    this.tweens.add({
+                        targets: this.ralph,
+                        y: '-=50',
+                        duration: 300,
+                        yoyo: true,
+                        repeat: 2,
+                        onComplete: () => {
+                            this.time.delayedCall(1000, () => {
+                                this.tweens.add({
+                                    targets: this.ralph,
+                                    y: 0,
+                                    duration: 1000,
+                                    onComplete: () => {
+                                        this.tweens.add({
+                                            targets: this.felix,
+                                            y: 0,
+                                            duration: 1000,
+                                            onComplete: () => {
+                                                this.time.delayedCall(500, () => {
+                                                    this.scene.start('playScene');
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
             }
 
-
-            // Create a graphics object
-            this.overBar = this.add.graphics();
-
-            // Draw a black rectangle at the top of the screen
-            this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
-            this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
-            this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
-            this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
             
-            this.whiteBar2.setDepth(12);
-            this.blackBar2.setDepth(13);
-            this.nextLevelText = this.add.text(width/2, height/2, 'Next Level Incomplete\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+
+            // // Create a graphics object
+            // this.overBar = this.add.graphics();
+
+            // // Draw a black rectangle at the top of the screen
+            // this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
+            // this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
+            // this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
+            // this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
             
-            if (score > highscore) {
-                highscore = score;
-                this.highScoreString = String(highscore).padStart(6, '0');
-                this.highScoreDisplay.setText(this.highScoreString);
-            }
+            // this.whiteBar2.setDepth(12);
+            // this.blackBar2.setDepth(13);
+            // this.nextLevelText = this.add.text(width/2, height/2, 'Next Level Incomplete\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
+            
+            // if (score > highscore) {
+            //     highscore = score;
+            //     this.highScoreString = String(highscore).padStart(6, '0');
+            //     this.highScoreDisplay.setText(this.highScoreString);
+            // }
+        }
+
+        if (transitioning) {
+            this.brick.x = 0;
+            this.brick.y = 0;
         }
 
         if ((gameOver || nextLevel) && cursors.rKey.isDown) {
@@ -588,7 +635,7 @@ class Play extends Phaser.Scene {
             ralphLocation = this.randX;
             if (this.randX == 2) {
                 this.ralph.play('ralph_walk');
-                this.tweens.add({
+                this.ralphAttack = this.tweens.add({
                     targets: this.ralph,
                     x: width/2,
                     duration: 500 * this.travel,
@@ -610,7 +657,7 @@ class Play extends Phaser.Scene {
             }
             else {
                 this.ralph.play('ralph_walk');
-                this.tweens.add({
+                this.ralphAttack = this.tweens.add({
                     targets: this.ralph,
                     x: width/2 + width/(this.xPos[this.randX]),
                     duration: 500 * this.travel,
@@ -703,7 +750,7 @@ class Play extends Phaser.Scene {
             this.rand = Phaser.Math.Between(0, 1);
             if (this.rand == 0) {
                 let windowcover = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 0);
-                windowcover.setSize(3, 16).setOffset(0, 0).setScale(5).setOrigin(0.5, 0);
+                windowcover.setSize(3, 16).setOffset(0, 0).setScale(5).setOrigin(0.5, 0).setDepth(12);
                 windowcover.body.checkCollision.up = false;
                 windowcover.body.checkCollision.down = false;
                 this.windowcoverGroup.add(windowcover);  
@@ -715,7 +762,7 @@ class Play extends Phaser.Scene {
             }
             else {
                 let flowerpot = new Flowerpot(this, x, height/this.flowerpotY[y-1], 'obstacle');
-                flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0);
+                flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0).setDepth(12);
                 flowerpot.body.checkCollision.left = false;
                 flowerpot.body.checkCollision.right = false;
                 this.flowerpotGroup.add(flowerpot);  
