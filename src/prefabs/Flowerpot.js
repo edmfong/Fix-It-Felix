@@ -1,6 +1,6 @@
-class Platform extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, texture) {
-        super(scene, x, y, texture, 3);
+class Flowerpot extends Phaser.Physics.Arcade.Sprite {
+    constructor(scene, x, y, texture, frame) {
+        super(scene, x, y, texture, 2);
 
         this.parentScene = scene;
 

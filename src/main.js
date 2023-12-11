@@ -15,13 +15,13 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            //debug: true,
+            debug: true,
         },
     },
     width: 640,
     height: 640,
     backgroundColor: '#000000',
-    scene: [ Load, Menu, Play ],
+    scene: [ Load, Menu, Play, End ],
 }
 
 let game = new Phaser.Game(config)
@@ -30,7 +30,7 @@ let { height, width } = game.config
 
 let centerX = game.config.width/2;
 let centerY = game.config.height/2;
-let level = 1;
+let level = 2;
 let speed = 200;
 let playerDirection = 'left';
 let playerMovement = 'idle';

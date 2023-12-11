@@ -7,7 +7,7 @@ class Play extends Phaser.Scene {
         // set variables
         playerDirection = 'left';
         playerMovement = 'idle';
-        isSuper = false;
+        isSuper = true;
         fixOnCD = false;
         fixing = false;
         fixed = false;
@@ -23,7 +23,12 @@ class Play extends Phaser.Scene {
         }
 
         // initialize building
+        if (level == 1) {
         this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 0).setScale(5);
+        }
+        else {
+            this.buildings = this.add.tileSprite(centerX, centerY, 128, 128, 'buildings', 1).setScale(5);
+        }
 
         // Create a graphics object
         this.statsBar = this.add.graphics();
@@ -56,7 +61,7 @@ class Play extends Phaser.Scene {
         this.ralph.play('ralph_idle');
 
         // hat
-        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11).setOrigin(0.5, 1).setAlpha(1);
+        this.hat = this.physics.add.sprite(this.felix.x, this.felix.y, 'hat', 0).setScale(2).setDepth(11).setOrigin(0.5, 1).setAlpha(0);
         this.hat.setSize(16, 4).setOffset(8, 8)
 
         // pie
@@ -102,11 +107,30 @@ class Play extends Phaser.Scene {
             runChildUpdate: true
         });
 
+        // initialize flowerpot obstacles
+        this.flowerpotGroup = this.add.group({
+            runChildUpdate: true
+        });
+
+        // initialize window cover obstacles
+        this.windowcoverGroup = this.add.group({
+            runChildUpdate: true
+        });
+
         this.setPlatform();
         this.setWindow();
-
+        if (level > 1) {
+            this.setObstacles();
+        }
+        
         // coliders
         this.physics.add.collider(this.felix, this.platformGroup);
+        this.physics.add.collider(this.felix, this.windowcoverGroup, function () {
+            this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
+            this.hat.x = this.felix.x;
+            this.hat.y = this.felix.y;
+        }, null, this);
+        this.physics.add.collider(this.felix, this.flowerpotGroup);
         this.physics.add.overlap(this.hat, this.brick, this.felixHit, null, this);
         this.physics.add.overlap(this.felix, this.pie, this.pieAte, null, this);
         this.physics.add.overlap(this.felix, this.windowGroup, this.windowFixable, null, this);
@@ -225,13 +249,17 @@ class Play extends Phaser.Scene {
             // change hat color
             if (isSuper) {
                 this.superCondition();
+                this.hat.setAlpha(1);
             }
         }
 
         // hat
-        this.hat.x = this.felix.x;
-        this.hat.y = this.felix.y;
-        this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
+        if (!(this.felix.body.blocked.left || this.felix.body.blocked.right)) {
+            this.hat.x = this.felix.x;
+            this.hat.y = this.felix.y;
+
+            this.hat.setVelocity(this.felix.body.velocity.x, this.felix.body.velocity.y);
+        }
 
         if (gameOver) {
             this.felix.setVelocityX(0);
@@ -267,6 +295,17 @@ class Play extends Phaser.Scene {
             this.felix.play('felix' + '_' + 'idle' + '_' + playerDirection, true);
             this.hat.setAlpha(0);
 
+            // next level
+            level++;
+
+            if (level == 5) {
+                this.scene.start('endScene');
+            }
+
+            else {
+                this.scene.start('playScene')
+            }
+
 
             // Create a graphics object
             this.overBar = this.add.graphics();
@@ -296,29 +335,29 @@ class Play extends Phaser.Scene {
     }
 
     setPlatform() {
-        // row 1
+        // col 1
         this.addPlatform(width/2 - width/3.77, height/2.15);
         this.addPlatform(width/2 - width/3.77, height/1.53);
         this.addPlatform(width/2 - width/3.77, height/1.19);
 
-        // row 2
+        // col 2
         this.addPlatform(width/2 - width/7.5, height/2.15);
         this.addPlatform(width/2 - width/7.5, height/1.53);
         this.addPlatform(width/2 - width/7.5, height/1.19);
         
-        // row 3
+        // col 3
         this.addPlatform(width/2, height/2.15);
         this.addPlatform(width/2, height/1.53);
         if (level != 1) {
             this.addPlatform(width/2, height/1.19);
         }
 
-        // row 4
+        // col 4
         this.addPlatform(width/2 + width/7.5, height/2.15);
         this.addPlatform(width/2 + width/7.5, height/1.53);
         this.addPlatform(width/2 + width/7.5, height/1.19);
 
-        // row 5
+        // col 5
         this.addPlatform(width/2 + width/3.77, height/2.15);
         this.addPlatform(width/2 + width/3.77, height/1.53);
         this.addPlatform(width/2 + width/3.77, height/1.19);
@@ -339,29 +378,29 @@ class Play extends Phaser.Scene {
     }
 
     setWindow() {
-        // row 1
+        // col 1
         this.addWindow(width/2 - width/3.77, height/2.415);
         this.addWindow(width/2 - width/3.77, height/1.662);
         this.addWindow(width/2 - width/3.77, height/1.267);
 
-        // row 2
+        // col 2
         this.addWindow(width/2 - width/7.5, height/2.415);
         this.addWindow(width/2 - width/7.5, height/1.662);
         this.addWindow(width/2 - width/7.5, height/1.267);
 
-        // row 3
+        // col 3
         this.addWindow(width/2, height/2.415);
         if (level != 1) {
             this.addWindow(width/2, height/1.662);
             this.addWindow(width/2, height/1.267);
         }
 
-        // row 4
+        // col 4
         this.addWindow(width/2 + width/7.5, height/2.415);
         this.addWindow(width/2 + width/7.5, height/1.662);
         this.addWindow(width/2 + width/7.5, height/1.267);
 
-        // row 5
+        // col 5
         this.addWindow(width/2 + width/3.77, height/2.415);
         this.addWindow(width/2 + width/3.77, height/1.662);
         this.addWindow(width/2 + width/3.77, height/1.267);
@@ -427,6 +466,7 @@ class Play extends Phaser.Scene {
             }
             else {
                 this.hat.clearTint();
+                this.hat.setAlpha(0);
             }
         }
         else {
@@ -552,5 +592,74 @@ class Play extends Phaser.Scene {
         this.time.delayedCall(1250, () => {
             this.punchSFX.play()
         });
+    }
+
+    setObstacles() {
+        this.rand = Phaser.Math.Between(0, 1);
+        if (this.rand == 0) {
+            // col 1
+            this.addObstacle(width/2 - width/3.77, 1);
+            this.addObstacle(width/2 - width/3.77, 3);
+
+            // col 2
+            this.addObstacle(width/2 - width/7.5, 2);
+            
+            // col 3
+            this.addObstacle(width/2, 1);
+            this.addObstacle(width/2, 3);
+
+            // col 4
+            this.addObstacle(width/2 + width/7.5, 2);
+
+            // col 5
+            this.addObstacle(width/2 + width/3.77, 1);
+            this.addObstacle(width/2 + width/3.77, 3);
+        }
+        else {
+            // col 1
+            this.addObstacle(width/2 - width/3.77, 2);
+
+            // col 2
+            this.addObstacle(width/2 - width/7.5, 1);
+            this.addObstacle(width/2 - width/7.5, 3);
+            
+            // col 3
+            this.addObstacle(width/2, 2);
+
+            // col 4
+            this.addObstacle(width/2 + width/7.5, 1);
+            this.addObstacle(width/2 + width/7.5, 3);
+
+            // col 5
+            this.addObstacle(width/2 + width/3.77, 2);
+        }
+    }
+
+    addObstacle(x, y) {
+        this.flowerpotY = [2.125, 1.52, 1.182]
+        this.windowcoverY = [2.245, 1.58, 1.22]
+
+        // 33.3% to spawn an obstacle
+        this.randSpawn = Phaser.Math.Between(1, 3);
+        if (this.randSpawn == 1) {
+            this.rand = Phaser.Math.Between(0, 1);
+            if (this.rand == 0) {
+                let windowcover = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 0);
+                windowcover.setSize(3, 16).setOffset(0, 0).setScale(5).setOrigin(0.5, 0);
+                windowcover.body.checkCollision.up = false;
+                windowcover.body.checkCollision.down = false;
+                this.windowcoverGroup.add(windowcover);  
+                let windowcover2 = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 1);
+                windowcover2.setSize(3, 16).setOffset(13, 0).setScale(5).setOrigin(0.5, 0);
+                windowcover2.body.checkCollision.up = false;
+                windowcover2.body.checkCollision.down = false;
+                this.windowcoverGroup.add(windowcover2);
+            }
+            else {
+                let flowerpot = new Flowerpot(this, x, height/this.flowerpotY[y-1], 'obstacle');
+                    flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0);
+                this.flowerpotGroup.add(flowerpot);  
+            }
+        }
     }
 }

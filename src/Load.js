@@ -274,6 +274,7 @@ class Load extends Phaser.Scene {
         });
 
         // finished loading
-        this.scene.start('menuScene');
+        // this.scene.start('menuScene');
+        this.scene.start('playScene');
     }
 }
