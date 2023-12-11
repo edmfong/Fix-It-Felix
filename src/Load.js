@@ -108,6 +108,11 @@ class Load extends Phaser.Scene {
             frameHeight: 16,
         });
 
+        this.load.spritesheet('npc', './assets/spritesheet/npc.png', {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+
         this.load.image('menu', './assets/menu.png')
 
         // load sfx + bgm
@@ -275,6 +280,7 @@ class Load extends Phaser.Scene {
 
         // finished loading
         // this.scene.start('menuScene');
-        this.scene.start('playScene');
+        // this.scene.start('playScene');
+        this.scene.start('endScene');
     }
 }
