@@ -113,7 +113,15 @@ class Load extends Phaser.Scene {
             frameHeight: 16,
         });
 
+        this.load.image('cloud', './assets/spritesheet/cloud.png');
+
+        this.load.image('medal', './assets/spritesheet/medal.png');
+
         this.load.image('menu', './assets/menu.png')
+
+        this.load.image('ralph_dead', './assets/spritesheet/ralph_dead.png');
+
+        this.load.image('endScene_building', './assets/spritesheet/endScene_building.png');
 
         // load sfx + bgm
         this.load.audio('punch', './assets/sfx/punch.mp3');
@@ -275,6 +283,26 @@ class Load extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('Ralph', {
                 start: 4,
                 end: 5,
+            }),
+        });
+
+        this.anims.create({
+            key: 'ralph_fall',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Ralph', {
+                start: 6,
+                end: 7,
+            }),
+        });
+
+        this.anims.create({
+            key: 'ralph_carry',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('Ralph', {
+                start: 8,
+                end: 9,
             }),
         });
 
