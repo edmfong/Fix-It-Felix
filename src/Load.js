@@ -313,6 +313,7 @@ class Load extends Phaser.Scene {
 
         // finished loading
         this.scene.start('menuScene');
+        // this.scene.start('infoScene');
         // this.scene.start('playScene');
         // this.scene.start('endScene');
     }

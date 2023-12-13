@@ -10,6 +10,7 @@ class Menu extends Phaser.Scene {
         this.info = this.add.bitmapText(width/2, height/1.7 + 30, 'pixelFont', 'PRESS [I] FOR INSTRUCTIONS', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff);
         this.cameras.main.fadeIn(1000, 0, 0, 0);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.iKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.I);
 
         this.time.addEvent({
             delay: 1500,
@@ -50,8 +51,12 @@ class Menu extends Phaser.Scene {
 
     update() {
         if (this.spaceKey.isDown) {
-            this.clickSFX.play()
+            this.clickSFX.play();
             this.scene.start('playScene');
+        }
+        if (this.iKey.isDown) {
+            this.clickSFX.play();
+            this.scene.start('infoScene');
         }
     }
 }
