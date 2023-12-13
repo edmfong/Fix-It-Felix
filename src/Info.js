@@ -50,7 +50,7 @@ class Info extends Phaser.Scene {
         // more/menu
         this.pg2Text = this.add.bitmapText(width/3.5, height / 7.5 + 4 * height / 5, 'pixelFont', '{- Prev            ', 14).setScrollFactor(0).setOrigin(0, 0).setTintFill(0xffffff).setDepth(91).setLeftAlign().setAlpha(0);
 
-        this.clickSFX = this.sound.add('click');
+        this.clickSFX = this.sound.add('click').setVolume(0.5);
     }   
 
     update() {

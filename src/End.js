@@ -32,7 +32,7 @@ class End extends Phaser.Scene {
         this.scoreString = String(score).padStart(6, '0');
         this.highscoreString = String(highscore).padStart(6, '0');
 
-        this.livesDisplay = this.add.image(width - width/9, 15, 'lives', lives).setOrigin(0.5, 0).setDepth(91).setScale(2.5);
+        this.livesDisplay = this.add.image(width - (width + 64)/9, 15, 'lives', lives).setScrollFactor(0).setOrigin(0.5, 0).setDepth(91).setScale(2.5);
         this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
         this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
         this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
@@ -49,11 +49,12 @@ class End extends Phaser.Scene {
                 });
             });
         });
-        // onComplete: () => {
-        //     this.npcGroup.getChildren().forEach(npc => {
-        //         npc.setTexture(npc.texture, npc.frame.name - 6);
-        //     });
-        // }
+        
+        // sfx
+        this.fixSFX = this.sound.add('fix').setVolume(0.5);
+        this.winSFX = this.sound.add('win').setVolume(0.4);
+        this.fallingSFX = this.sound.add('falling').setVolume(0.3);
+        this.impactSFX = this.sound.add('impact').setVolume(0.3);
     }
 
     createNPC(scene, x, y, texture, frame, group) { // create npcs and put them in a group
@@ -138,6 +139,9 @@ class End extends Phaser.Scene {
     }
 
     giveMedal(callback) {
+        this.time.delayedCall(300, () => {
+            this.winSFX.play();
+        });
         this.tweens.add({ // reveal medal
             targets: this.medal,
             alpha: 1,
@@ -156,6 +160,9 @@ class End extends Phaser.Scene {
                     onComplete: () => {
                         this.cloud1.setAlpha(0);
                         this.cloud2.setAlpha(0);
+                        this.time.delayedCall(2200, () => {
+                            this.fixSFX.play()
+                            });
                         this.tweens.add({ // move medal towards felix
                             targets: this.medal,
                             x: this.felix.x,
@@ -200,6 +207,9 @@ class End extends Phaser.Scene {
                 duration: 300,
                 ease: 'Power2',
                 onComplete: () => { // semi-circle
+                    this.time.delayedCall(500, () => {
+                        this.fallingSFX.play();
+                    });
                     this.tweens.add({
                         targets: this.ralph,
                         x: {
@@ -261,6 +271,7 @@ class End extends Phaser.Scene {
                         this.ralph.stop()
                         this.ralph.setAngle(0);
                         this.ralph.setTexture('ralph_dead');
+                        this.impactSFX.play();
                     }
                 });
             }

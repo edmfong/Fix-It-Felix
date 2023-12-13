@@ -135,6 +135,9 @@ class Load extends Phaser.Scene {
         this.load.audio('click', './assets/sfx/click.mp3');
         this.load.audio('hit', './assets/sfx/hit.mp3');
         this.load.audio('eat', './assets/sfx/eat.mp3');
+        this.load.audio('win', './assets/sfx/win.mp3');
+        this.load.audio('falling', './assets/sfx/falling.mp3');
+        this.load.audio('impact', './assets/sfx/impact.mp3');
 
     }
 
@@ -313,8 +316,5 @@ class Load extends Phaser.Scene {
 
         // finished loading
         this.scene.start('menuScene');
-        // this.scene.start('infoScene');
-        // this.scene.start('playScene');
-        // this.scene.start('endScene');
     }
 }

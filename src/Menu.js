@@ -46,7 +46,7 @@ class Menu extends Phaser.Scene {
             loop: true
         });
 
-        this.clickSFX = this.sound.add('click');
+        this.clickSFX = this.sound.add('click').setVolume(0.5);
     }
 
     update() {

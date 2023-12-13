@@ -166,12 +166,12 @@ class Play extends Phaser.Scene {
         })
 
         // initialize sfx
-        this.fixSFX = this.sound.add('fix');
-        this.punchSFX = this.sound.add('punch');
-        this.jumpSFX = this.sound.add('jump');
-        this.eatSFX = this.sound.add('eat');
-        this.clickSFX = this.sound.add('click');
-        this.hitSFX = this.sound.add('hit');
+        this.fixSFX = this.sound.add('fix').setVolume(0.3);
+        this.punchSFX = this.sound.add('punch').setVolume(0.4);
+        this.jumpSFX = this.sound.add('jump').setVolume(0.4);
+        this.eatSFX = this.sound.add('eat').setVolume(0.4);
+        this.clickSFX = this.sound.add('click').setVolume(0.5);
+        this.hitSFX = this.sound.add('hit').setVolume(0.4);
 
         // game over text
         this.gameOverText = this.add.bitmapText(width/2, height/2, 'pixelFont', 'Game Over', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14).setAlpha(0);
