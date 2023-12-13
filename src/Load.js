@@ -113,6 +113,11 @@ class Load extends Phaser.Scene {
             frameHeight: 16,
         });
 
+        this.load.spritesheet('lives', './assets/spritesheet/lives.png', {
+            frameWidth: 48,
+            frameHeight: 16,
+        });
+
         this.load.image('cloud', './assets/spritesheet/cloud.png');
 
         this.load.image('medal', './assets/spritesheet/medal.png');
@@ -307,8 +312,8 @@ class Load extends Phaser.Scene {
         });
 
         // finished loading
-        // this.scene.start('menuScene');
+        this.scene.start('menuScene');
         // this.scene.start('playScene');
-        this.scene.start('endScene');
+        // this.scene.start('endScene');
     }
 }

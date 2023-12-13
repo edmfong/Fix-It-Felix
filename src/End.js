@@ -32,8 +32,7 @@ class End extends Phaser.Scene {
         this.scoreString = String(score).padStart(6, '0');
         this.highscoreString = String(highscore).padStart(6, '0');
 
-        this.livesText = this.add.bitmapText(width - width/10, 10, 'pixelFont', 'Lives', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
-        this.livesDisplay = this.add.bitmapText(width - width/10, 40, 'pixelFont', lives, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
+        this.livesDisplay = this.add.image(width - width/9, 15, 'lives', lives).setOrigin(0.5, 0).setDepth(91).setScale(2.5);
         this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
         this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
         this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);

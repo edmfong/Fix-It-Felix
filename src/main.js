@@ -1,6 +1,6 @@
 // Fix it Felix Remake
 // Name: Edwin Fong
-// Date: 12/15/23
+// Date: 12/14/23
 
 // sfx: zapsplat
 
@@ -30,7 +30,7 @@ let { height, width } = game.config
 
 let centerX = game.config.width/2;
 let centerY = game.config.height/2;
-let level = 1;
+let level = 2;
 let speed = 200;
 let playerDirection = 'left';
 let playerMovement = 'idle';

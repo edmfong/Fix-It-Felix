@@ -7,8 +7,8 @@ class Play extends Phaser.Scene {
         // set variables
         playerDirection = 'left';
         playerMovement = 'idle';
-        isSuper = true;
-        immune = true;
+        isSuper = false;
+        immune = false;
         fixOnCD = false;
         fixing = false;
         fixed = false;
@@ -46,8 +46,7 @@ class Play extends Phaser.Scene {
         this.scoreString = String(score).padStart(6, '0');
         this.highscoreString = String(highscore).padStart(6, '0');
 
-        this.livesText = this.add.bitmapText(width - width/10, 10, 'pixelFont', 'Lives', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
-        this.livesDisplay = this.add.bitmapText(width - width/10, 40, 'pixelFont', lives, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
+        this.livesDisplay = this.add.image(width - width/9, 15, 'lives', lives).setOrigin(0.5, 0).setDepth(91).setScale(2.5);
         this.scoreText = this.add.bitmapText(width/10, 10, 'pixelFont', 'Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
         this.scoreDisplay = this.add.bitmapText(width/10, 40, 'pixelFont', this.scoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
         this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
@@ -173,12 +172,46 @@ class Play extends Phaser.Scene {
         this.eatSFX = this.sound.add('eat');
         this.clickSFX = this.sound.add('click');
         this.hitSFX = this.sound.add('hit');
+
+        // game over text
+        this.gameOverText = this.add.bitmapText(width/2, height/2, 'pixelFont', 'Game Over', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14).setAlpha(0);
+        this.pressSpaceText = this.add.bitmapText(width/2, height/2 + 30, 'pixelFont', 'Press [SPACE] for Menu', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14).setAlpha(0);
+            this.time.addEvent({
+                delay: 1500,
+                callback: () => {
+                    this.gameOverText.setText('Game Over');
+                },
+                callbackScope: this,
+                loop: true
+            });
+            this.time.addEvent({
+                delay: 1450,
+                callback: () => {
+                    this.gameOverText.setText('');
+                },
+                callbackScope: this,
+                loop: true
+            });
+            this.time.addEvent({
+                delay: 1500,
+                callback: () => {
+                    this.pressSpaceText.setText('Press [SPACE] for Menu');
+                },
+                callbackScope: this,
+                loop: true
+            });
+            this.time.addEvent({
+                delay: 1450,
+                callback: () => {
+                    this.pressSpaceText.setText('');
+                },
+                callbackScope: this,
+                loop: true
+            });
     }
 
     update() {
         if (!gameOver && !nextLevel) {
-            // lives display
-            this.livesDisplay.setText(lives);
 
             // score display
             this.scoreString = String(score).padStart(6, '0');
@@ -276,6 +309,7 @@ class Play extends Phaser.Scene {
                 immune = true;
                 this.immuneCondition();
                 lives--;
+                this.livesDisplay.setTexture('lives', lives);
                 this.time.delayedCall(2000, () => {
                     immune = false;
                     this.immuneCondition();
@@ -292,6 +326,8 @@ class Play extends Phaser.Scene {
         }
 
         if (gameOver) {
+            this.sound.stopAll();
+            this.brick.setAlpha(0);
             this.felix.setVelocityX(0);
             this.felix.setVelocityY(0);
             this.felix.setGravityY(0);
@@ -302,19 +338,22 @@ class Play extends Phaser.Scene {
             this.overBar = this.add.graphics();
 
             // Draw a black rectangle at the top of the screen
-            this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
-            this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
             this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
-            this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
+            this.blackBar2.fillRect(0, 0, width, height);
             
-            this.whiteBar2.setDepth(12);
             this.blackBar2.setDepth(13);
-            this.gameOverText = this.add.text(width/2, height/2, 'Game Over\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
-        
+            this.gameOverText.setAlpha(1);
+            this.pressSpaceText.setAlpha(1);
+
             if (score > highscore) {
                 highscore = score;
                 this.highScoreString = String(highscore).padStart(6, '0');
                 this.highScoreDisplay.setText(this.highScoreString);
+            }
+
+            if (gameOver && cursors.space.isDown) {
+                this.clickSFX.play()
+                this.scene.start('menuScene');
             }
         }
 
@@ -401,11 +440,7 @@ class Play extends Phaser.Scene {
         if (transitioning) {
             this.brick.x = 0;
             this.brick.y = 0;
-        }
-
-        if ((gameOver || nextLevel) && cursors.rKey.isDown) {
-            this.clickSFX.play()
-            this.scene.restart();
+            this.brick.setAlpha(0);
         }
 
     }
@@ -620,6 +655,7 @@ class Play extends Phaser.Scene {
                     immune = true;
                     this.immuneCondition();
                     lives--;
+                    this.livesDisplay.setTexture('lives', lives);
                     this.time.delayedCall(2000, () => {
                         immune = false;
                         this.immuneCondition();
