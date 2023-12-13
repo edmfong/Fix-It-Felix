@@ -4,6 +4,8 @@ class Play extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.fadeIn(1000, 0, 0, 0);
+
         // set variables
         playerDirection = 'left';
         playerMovement = 'idle';
@@ -18,6 +20,7 @@ class Play extends Phaser.Scene {
         nextLevel = false;
         transitioning = false;
         this.ralphFirstMove = true;
+        this.playedGameOverSFX = false;
         score = 0;
 
         // temp gameover reset
@@ -171,7 +174,9 @@ class Play extends Phaser.Scene {
         this.jumpSFX = this.sound.add('jump').setVolume(0.4);
         this.eatSFX = this.sound.add('eat').setVolume(0.4);
         this.clickSFX = this.sound.add('click').setVolume(0.5);
-        this.hitSFX = this.sound.add('hit').setVolume(0.4);
+        this.hitSFX = this.sound.add('hit').setVolume(0.3);
+        this.window_breakSFX = this.sound.add('window_break').setVolume(0.3);
+        this.gameOverSFX = this.sound.add('gameOver').setVolume(0.4);
 
         // game over text
         this.gameOverText = this.add.bitmapText(width/2, height/2, 'pixelFont', 'Game Over', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14).setAlpha(0);
@@ -257,6 +262,7 @@ class Play extends Phaser.Scene {
                 });
             }
 
+            // checks if felix can fix windows
             if (cursors.space.isDown && !this.prevSpaceDown && fixOnCD == false && this.felix.body.onFloor()) {
                 fixOnCD = true;
                 fixing = true;
@@ -326,7 +332,7 @@ class Play extends Phaser.Scene {
         }
 
         if (gameOver) {
-            this.sound.stopAll();
+            this.playGameOverSFX();
             this.brick.setAlpha(0);
             this.felix.setVelocityX(0);
             this.felix.setVelocityY(0);
@@ -358,7 +364,6 @@ class Play extends Phaser.Scene {
         }
 
         if (nextLevel && !transitioning) {
-            console.log('nextlevel')
             transitioning = true;
             this.felix.setVelocityX(0);
             this.felix.setVelocityY(0);
@@ -368,12 +373,52 @@ class Play extends Phaser.Scene {
 
             // next level
             level++;
-            console.log(level);
 
+            // transition to end scene
             if (level == 5) {
-                this.scene.start('endScene');
+                this.superCheckTimer.remove();
+                this.pieTimer.remove();
+                this.ralphAttack.remove();
+
+                this.felix.play('felix' + '_' + 'fix' + '_' + playerDirection, true);
+                this.ralph.play('ralph_idle');
+                this.time.delayedCall(1000, () => {
+                    this.tweens.add({
+                        targets: this.ralph,
+                        y: '-=50',
+                        duration: 300,
+                        yoyo: true,
+                        repeat: 2,
+                        onComplete: () => {
+                            this.time.delayedCall(1000, () => {
+                                this.jumpSFX.play()
+                                this.tweens.add({
+                                    targets: this.ralph,
+                                    y: 0,
+                                    duration: 1000,
+                                    ease: 'Power2',
+                                    onComplete: () => {
+                                        this.jumpSFX.play()
+                                        this.tweens.add({
+                                            targets: this.felix,
+                                            ease: 'Power2',
+                                            y: 0,
+                                            duration: 1000,
+                                            onComplete: () => {
+                                                this.time.delayedCall(500, () => {
+                                                    this.scene.start('endScene');
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
             }
 
+            // transition to next level
             else {
                 this.superCheckTimer.remove();
                 this.pieTimer.remove();
@@ -390,12 +435,14 @@ class Play extends Phaser.Scene {
                         repeat: 2,
                         onComplete: () => {
                             this.time.delayedCall(1000, () => {
+                                this.jumpSFX.play();
                                 this.tweens.add({
                                     targets: this.ralph,
                                     y: 0,
                                     duration: 1000,
                                     ease: 'Power2',
                                     onComplete: () => {
+                                        this.jumpSFX.play();
                                         this.tweens.add({
                                             targets: this.felix,
                                             ease: 'Power2',
@@ -414,27 +461,6 @@ class Play extends Phaser.Scene {
                     });
                 });
             }
-
-            
-
-            // // Create a graphics object
-            // this.overBar = this.add.graphics();
-
-            // // Draw a black rectangle at the top of the screen
-            // this.whiteBar2 = this.overBar.fillStyle(0xffffff, 1);
-            // this.whiteBar2.fillRect((width/4) - 5, height/2 - 5, (width/2) + 10, height/12 + 10);
-            // this.blackBar2 = this.overBar.fillStyle(0x00000, 1);
-            // this.blackBar2.fillRect(width/4, height/2, width/2, height/12);
-            
-            // this.whiteBar2.setDepth(12);
-            // this.blackBar2.setDepth(13);
-            // this.nextLevelText = this.add.text(width/2, height/2, 'Next Level Incomplete\nPress [R] to Restart', { fontSize: '24px', fill: '#fff', fontWeight: 'bold', align: 'center' }).setScrollFactor(0).setOrigin(0.5, 0).setDepth(14);
-            
-            // if (score > highscore) {
-            //     highscore = score;
-            //     this.highScoreString = String(highscore).padStart(6, '0');
-            //     this.highScoreDisplay.setText(this.highScoreString);
-            // }
         }
 
         if (transitioning) {
@@ -445,6 +471,7 @@ class Play extends Phaser.Scene {
 
     }
 
+    // sets window platforms
     setPlatform() {
         // col 1
         this.addPlatform(width/2 - width/3.77, height/2.15);
@@ -474,6 +501,7 @@ class Play extends Phaser.Scene {
         this.addPlatform(width/2 + width/3.77, height/1.19);
     }
 
+    // initializing individual window platforms
     addPlatform(x, y) {
         let platform = new Platform(this, x, y, 'obstacle');
         if (level == 1 && x == width/2 && y == height/1.53) {
@@ -488,6 +516,80 @@ class Play extends Phaser.Scene {
         this.platformGroup.add(platform);     
     }
 
+    // at certain locations, can spawn window shutters or flowerpots on level 2+
+    setObstacles() {
+        this.rand = Phaser.Math.Between(0, 1);
+        if (this.rand == 0) {
+            // col 1
+            this.addObstacle(width/2 - width/3.77, 1);
+            this.addObstacle(width/2 - width/3.77, 3);
+
+            // col 2
+            this.addObstacle(width/2 - width/7.5, 2);
+            
+            // col 3
+            this.addObstacle(width/2, 1);
+            this.addObstacle(width/2, 3);
+
+            // col 4
+            this.addObstacle(width/2 + width/7.5, 2);
+
+            // col 5
+            this.addObstacle(width/2 + width/3.77, 1);
+            this.addObstacle(width/2 + width/3.77, 3);
+        }
+        else {
+            // col 1
+            this.addObstacle(width/2 - width/3.77, 2);
+
+            // col 2
+            this.addObstacle(width/2 - width/7.5, 1);
+            this.addObstacle(width/2 - width/7.5, 3);
+            
+            // col 3
+            this.addObstacle(width/2, 2);
+
+            // col 4
+            this.addObstacle(width/2 + width/7.5, 1);
+            this.addObstacle(width/2 + width/7.5, 3);
+
+            // col 5
+            this.addObstacle(width/2 + width/3.77, 2);
+        }
+    }
+
+    // add either a window shutter or flowerpot
+    addObstacle(x, y) {
+        this.flowerpotY = [2.125, 1.52, 1.182]
+        this.windowcoverY = [2.245, 1.58, 1.22]
+
+        // 33.3% to spawn an obstacle
+        this.randSpawn = Phaser.Math.Between(1, 3);
+        if (this.randSpawn == 1) {
+            this.rand = Phaser.Math.Between(0, 1);
+            if (this.rand == 0) {
+                let windowcover = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 0);
+                windowcover.setSize(3, 16).setOffset(0, 0).setScale(5).setOrigin(0.5, 0).setDepth(12);
+                windowcover.body.checkCollision.up = false;
+                windowcover.body.checkCollision.down = false;
+                this.windowcoverGroup.add(windowcover);  
+                let windowcover2 = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 1);
+                windowcover2.setSize(3, 16).setOffset(13, 0).setScale(5).setOrigin(0.5, 0);
+                windowcover2.body.checkCollision.up = false;
+                windowcover2.body.checkCollision.down = false;
+                this.windowcoverGroup.add(windowcover2);
+            }
+            else {
+                let flowerpot = new Flowerpot(this, x, height/this.flowerpotY[y-1], 'obstacle');
+                flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0).setDepth(12);
+                flowerpot.body.checkCollision.left = false;
+                flowerpot.body.checkCollision.right = false;
+                this.flowerpotGroup.add(flowerpot);  
+            }
+        }
+    }
+
+    // set windows
     setWindow() {
         // col 1
         this.addWindow(width/2 - width/3.77, height/2.415);
@@ -517,6 +619,7 @@ class Play extends Phaser.Scene {
         this.addWindow(width/2 + width/3.77, height/1.267);
     }
 
+    // initialize individual windows
     addWindow(x, y) {
         this.rand = Phaser.Math.Between(0, 1);
         let texture;
@@ -532,11 +635,13 @@ class Play extends Phaser.Scene {
         this.windowGroup.add(window);     
     }
 
+    // when ralph attacks, has chance to break window
     breakWindow() {
         this.windowGroup.getChildren().forEach(window => {
             this.rand = Phaser.Math.Between(1, (70 - level*10));
             if (this.rand == 1) {
                 if (window.frame.name > 0) {
+                    this.window_breakSFX.play();
                     window.setTexture(window.texture, window.frame.name - 1);
                 }
             }
@@ -544,6 +649,7 @@ class Play extends Phaser.Scene {
 
     }
 
+    // checks if windows can be fixed
     windowFixable(felix, window) {
         if (fixing == true) {
             if (isSuper) {
@@ -554,14 +660,41 @@ class Play extends Phaser.Scene {
                     fixed = true;
                     if ((4 - this.initialFrame) == 0) {
                         score += 4 * 100;
+                        this.points = this.add.bitmapText(this.felix.x, this.felix.y - this.felix.height, 'pixelFont', '400', 8).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xFFFF00).setDepth(91);
+                        this.tweens.add({
+                            targets: this.points,
+                            y: '-=50',
+                            duration: 300,
+                            onComplete: () => {
+                                this.points.destroy();
+                            }
+                        });
                     }
                     else {
                         score += (4 - this.initialFrame) * 100;
+                        this.points = this.add.bitmapText(this.felix.x, this.felix.y - this.felix.height, 'pixelFont', 100 * (4 - this.initialFrame), 8).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xFFFF00).setDepth(91);
+                        this.tweens.add({
+                            targets: this.points,
+                            y: '-=50',
+                            duration: 300,
+                            onComplete: () => {
+                                this.points.destroy();
+                            }
+                        });
                     }
                 }
             }
             else if (window.frame.name < 4 && fixed == false) {
                 this.fixSFX.play()
+                this.points = this.add.bitmapText(this.felix.x, this.felix.y - this.felix.height, 'pixelFont', '100', 8).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xFFFF00).setDepth(91);
+                this.tweens.add({
+                    targets: this.points,
+                    y: '-=50',
+                    duration: 300,
+                    onComplete: () => {
+                        this.points.destroy();
+                    }
+                });
                 window.setTexture(window.texture, window.frame.name + 1);
                 fixed = true;
                 score += 100;
@@ -569,6 +702,7 @@ class Play extends Phaser.Scene {
         }
     }
 
+    // if pie was eaten, super mode activates
     pieAte() {
         this.pie.setAlpha(0);
         this.pie.x = 0;
@@ -581,45 +715,7 @@ class Play extends Phaser.Scene {
         });
     }
 
-    superCondition() {
-        if (!gameOver && !nextLevel) {
-            if (isSuper) {
-                const color = Phaser.Display.Color.RandomRGB();
-                this.hat.setTint(color.color);
-            }
-            else {
-                this.hat.clearTint();
-                this.hat.setAlpha(0);
-            }
-        }
-        else {
-            this.hat.clearTint();
-        }
-    }
-
-    immuneCondition() {
-        if (!gameOver && !nextLevel) {
-            this.immuneEvent;
-            if (immune) {
-                this.immuneEvent = this.time.addEvent({
-                    delay: 200,
-                    callback: function () {
-                        this.felix.alpha = (this.felix.alpha === 0) ? 1 : 0;
-                    },
-                    callbackScope: this,
-                    loop: true,
-                });
-            }
-            else {
-                this.immuneEvent.remove();
-                this.felix.alpha = 1;
-            }
-        }
-        else {
-            this.felix.setAlpha(1);
-        }
-    }
-
+    // spawns pie if available
     spawnPie() {
         if (!gameOver && !nextLevel) {
             // 10% to spawn pie every 5s
@@ -647,6 +743,47 @@ class Play extends Phaser.Scene {
         }
     }
 
+    // if pie was eaten, hat changes colors
+    superCondition() {
+        if (!gameOver && !nextLevel) {
+            if (isSuper) {
+                const color = Phaser.Display.Color.RandomRGB();
+                this.hat.setTint(color.color);
+            }
+            else {
+                this.hat.clearTint();
+                this.hat.setAlpha(0);
+            }
+        }
+        else {
+            this.hat.clearTint();
+        }
+    }
+
+    // if taken damage, felix becomes invulnerable to damage except from falling (again)
+    immuneCondition() {
+        if (!gameOver && !nextLevel) {
+            this.immuneEvent;
+            if (immune) {
+                this.immuneEvent = this.time.addEvent({
+                    delay: 200,
+                    callback: function () {
+                        this.felix.alpha = (this.felix.alpha === 0) ? 1 : 0;
+                    },
+                    callbackScope: this,
+                    loop: true,
+                });
+            }
+            else {
+                this.immuneEvent.remove();
+                this.felix.alpha = 1;
+            }
+        }
+        else {
+            this.felix.setAlpha(1);
+        }
+    }
+
     felixHit() {
         if (!gameOver && !nextLevel) {
             if (!immune) {
@@ -670,6 +807,7 @@ class Play extends Phaser.Scene {
         }
     }
 
+    // move ralph to a valid position to attack (break windows and/or drop brick)
     ralphMove() {
         if (!gameOver && !nextLevel) {
             this.randX = Phaser.Math.Between(0, 4);
@@ -713,8 +851,8 @@ class Play extends Phaser.Scene {
                     x: width/2 + width/(this.xPos[this.randX]),
                     duration: 500 * this.travel,
                     onComplete: () => {
-                        this.breakWindow()
-                        this.punchMult()
+                        this.breakWindow();
+                        this.punchMult();
                         this.time.delayedCall(1000, function () {
                             this.randBrick = Phaser.Math.Between(1, 2);
                             this.brick.setTexture('misc', this.randBrick);
@@ -732,6 +870,7 @@ class Play extends Phaser.Scene {
         }
     }
 
+    // sound effect for when ralph attacks
     punchMult() {
         this.punchSFX.play()
         this.time.delayedCall(250, () => {
@@ -751,74 +890,14 @@ class Play extends Phaser.Scene {
         });
     }
 
-    setObstacles() {
-        this.rand = Phaser.Math.Between(0, 1);
-        if (this.rand == 0) {
-            // col 1
-            this.addObstacle(width/2 - width/3.77, 1);
-            this.addObstacle(width/2 - width/3.77, 3);
-
-            // col 2
-            this.addObstacle(width/2 - width/7.5, 2);
-            
-            // col 3
-            this.addObstacle(width/2, 1);
-            this.addObstacle(width/2, 3);
-
-            // col 4
-            this.addObstacle(width/2 + width/7.5, 2);
-
-            // col 5
-            this.addObstacle(width/2 + width/3.77, 1);
-            this.addObstacle(width/2 + width/3.77, 3);
-        }
-        else {
-            // col 1
-            this.addObstacle(width/2 - width/3.77, 2);
-
-            // col 2
-            this.addObstacle(width/2 - width/7.5, 1);
-            this.addObstacle(width/2 - width/7.5, 3);
-            
-            // col 3
-            this.addObstacle(width/2, 2);
-
-            // col 4
-            this.addObstacle(width/2 + width/7.5, 1);
-            this.addObstacle(width/2 + width/7.5, 3);
-
-            // col 5
-            this.addObstacle(width/2 + width/3.77, 2);
-        }
-    }
-
-    addObstacle(x, y) {
-        this.flowerpotY = [2.125, 1.52, 1.182]
-        this.windowcoverY = [2.245, 1.58, 1.22]
-
-        // 33.3% to spawn an obstacle
-        this.randSpawn = Phaser.Math.Between(1, 3);
-        if (this.randSpawn == 1) {
-            this.rand = Phaser.Math.Between(0, 1);
-            if (this.rand == 0) {
-                let windowcover = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 0);
-                windowcover.setSize(3, 16).setOffset(0, 0).setScale(5).setOrigin(0.5, 0).setDepth(12);
-                windowcover.body.checkCollision.up = false;
-                windowcover.body.checkCollision.down = false;
-                this.windowcoverGroup.add(windowcover);  
-                let windowcover2 = new WindowCovers(this, x, height/this.windowcoverY[y-1], 'obstacle', 1);
-                windowcover2.setSize(3, 16).setOffset(13, 0).setScale(5).setOrigin(0.5, 0);
-                windowcover2.body.checkCollision.up = false;
-                windowcover2.body.checkCollision.down = false;
-                this.windowcoverGroup.add(windowcover2);
-            }
-            else {
-                let flowerpot = new Flowerpot(this, x, height/this.flowerpotY[y-1], 'obstacle');
-                flowerpot.setSize(15, 3).setOffset(0.5, 12).setScale(4).setOrigin(0.5, 0).setDepth(12);
-                flowerpot.body.checkCollision.left = false;
-                flowerpot.body.checkCollision.right = false;
-                this.flowerpotGroup.add(flowerpot);  
-            }
+    // play game over sound once and silence other sounds playing
+    playGameOverSFX() {
+        if (!this.playedGameOverSFX) {
+            this.playedGameOverSFX = true;
+            this.sound.stopAll();
+            this.time.delayedCall(250, () => {
+                this.gameOverSFX.play();
+            });
         }
     }
 }

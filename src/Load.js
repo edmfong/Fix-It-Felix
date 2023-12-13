@@ -128,7 +128,7 @@ class Load extends Phaser.Scene {
 
         this.load.image('endScene_building', './assets/spritesheet/endScene_building.png');
 
-        // load sfx + bgm
+        // load sfx
         this.load.audio('punch', './assets/sfx/punch.mp3');
         this.load.audio('fix', './assets/sfx/fix.mp3');
         this.load.audio('jump', './assets/sfx/jump.mp3');
@@ -138,7 +138,8 @@ class Load extends Phaser.Scene {
         this.load.audio('win', './assets/sfx/win.mp3');
         this.load.audio('falling', './assets/sfx/falling.mp3');
         this.load.audio('impact', './assets/sfx/impact.mp3');
-
+        this.load.audio('window_break', './assets/sfx/window_break.mp3');
+        this.load.audio('gameOver', './assets/sfx/gameOver.mp3');
     }
 
     create() {
@@ -264,6 +265,7 @@ class Load extends Phaser.Scene {
             }),
         });
 
+        // ralph animations
         this.anims.create({
             key: 'ralph_walk',
             frameRate: 5,

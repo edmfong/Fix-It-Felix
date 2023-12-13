@@ -4,6 +4,9 @@ class Info extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.fadeIn(1000, 0, 0, 0);
+
+        // loads text and images for pg1 and pg2, but hides pg2 until right arrow is pressed
         this.page = 1;
         this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
         this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
@@ -59,6 +62,7 @@ class Info extends Phaser.Scene {
             this.scene.start('menuScene');
         }
 
+        // changes to page 2
         if (this.page == 1 && Phaser.Input.Keyboard.JustDown(this.rightKey)) {
             this.clickSFX.play();
             this.page = 2;
@@ -90,6 +94,7 @@ class Info extends Phaser.Scene {
             });
         }
 
+        // changes to page 1
         if (this.page == 2 && Phaser.Input.Keyboard.JustDown(this.leftKey)) {
             this.clickSFX.play();
             this.page = 1;

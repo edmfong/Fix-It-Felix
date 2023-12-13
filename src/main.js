@@ -1,8 +1,10 @@
-// Fix it Felix Remake
+// Fix it Felix Jr. Remake
 // Name: Edwin Fong
 // Date: 12/14/23
 
-// sfx: zapsplat
+// Major components:
+// Physics System, (Bitmap) Text ObjectsTween Manager, Timers, Tilemaps 
+// Estimated Time Spent: 40 hrs
 
 "use strict"
 
@@ -21,7 +23,7 @@ let config = {
     width: 640,
     height: 640,
     backgroundColor: '#000000',
-    scene: [ Load, Menu, Info, Play, End ],
+    scene: [ Load, Menu, Info, Credits, Play, End ],
 }
 
 let game = new Phaser.Game(config)

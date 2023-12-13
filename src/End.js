@@ -4,6 +4,10 @@ class End extends Phaser.Scene {
     }
 
     create() {
+        this.cameras.main.fadeIn(1000, 0, 0, 0);
+
+        // load felix, ralph, and buildings
+        // preloads npcs, medal, and clouds
         this.buildings = this.add.image((width + (62*5)) /2 , height*1.425, 'endScene_building').setScale(5);
         this.felix = this.add.sprite(width / 3, height / 2.2, 'Felix', 0).setScale(2).setDepth(10).setOrigin(0.5, 1);
         this.ralph = this.add.sprite(width / 1.3, height / 2.8, 'Ralph', 0).setScale(4).setDepth(10).setOrigin(0.5, 0.5);
@@ -38,6 +42,7 @@ class End extends Phaser.Scene {
         this.highScoreText = this.add.bitmapText(width/2, 10, 'pixelFont', 'High Score', 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xff0000).setDepth(91);
         this.highScoreDisplay = this.add.bitmapText(width/2, 40, 'pixelFont', this.highscoreString, 18).setScrollFactor(0).setOrigin(0.5, 0).setTintFill(0xffffff).setDepth(91);
 
+        // animations
         this.npcWalkMid(() => {
             this.npcJump1;
             this.npcJump2;
@@ -272,6 +277,41 @@ class End extends Phaser.Scene {
                         this.ralph.setAngle(0);
                         this.ralph.setTexture('ralph_dead');
                         this.impactSFX.play();
+                        // game over text
+                        this.winText = this.add.bitmapText(width/2, height/2, 'pixelFont', 'You Win!', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14);
+                        this.pressSpaceText = this.add.bitmapText(width/2, height/2 + 30, 'pixelFont', 'Press [SPACE] for Menu', 18).setScrollFactor(0).setOrigin(0.5, 0.5).setTintFill(0xffffff).setDepth(14);
+                            this.time.addEvent({
+                                delay: 1500,
+                                callback: () => {
+                                    this.winText.setText('You Win!');
+                                },
+                                callbackScope: this,
+                                loop: true
+                            });
+                            this.time.addEvent({
+                                delay: 1450,
+                                callback: () => {
+                                    this.winText.setText('');
+                                },
+                                callbackScope: this,
+                                loop: true
+                            });
+                            this.time.addEvent({
+                                delay: 1500,
+                                callback: () => {
+                                    this.pressSpaceText.setText('Press [SPACE] for Menu');
+                                },
+                                callbackScope: this,
+                                loop: true
+                            });
+                            this.time.addEvent({
+                                delay: 1450,
+                                callback: () => {
+                                    this.pressSpaceText.setText('');
+                                },
+                                callbackScope: this,
+                                loop: true
+                            });
                     }
                 });
             }
