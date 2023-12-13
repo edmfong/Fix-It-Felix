@@ -60,6 +60,16 @@ class End extends Phaser.Scene {
         this.winSFX = this.sound.add('win').setVolume(0.4);
         this.fallingSFX = this.sound.add('falling').setVolume(0.3);
         this.impactSFX = this.sound.add('impact').setVolume(0.3);
+
+        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.clickSFX = this.sound.add('click').setVolume(0.5);
+        this.animationComplete = false;
+    }
+
+    update() {
+        if (Phaser.Input.Keyboard.JustDown(this.spaceKey) && this.animationComplete) {
+            this.scene.start('menuScene');
+        }
     }
 
     createNPC(scene, x, y, texture, frame, group) { // create npcs and put them in a group
@@ -272,6 +282,7 @@ class End extends Phaser.Scene {
                     y: height - height/8,
                     duration: 1000,
                     onComplete: () => {
+                        this.animationComplete = true;
                         this.ralphRotate.stop();
                         this.ralph.stop()
                         this.ralph.setAngle(0);
@@ -322,4 +333,6 @@ class End extends Phaser.Scene {
             duration: 1110,
         });
     }
+
+
 }

@@ -21,13 +21,6 @@ class Play extends Phaser.Scene {
         transitioning = false;
         this.ralphFirstMove = true;
         this.playedGameOverSFX = false;
-        score = 0;
-
-        // temp gameover reset
-        if (lives == 0) {
-            lives = 3;
-            level = 1
-        }
 
         // initialize building
         if (level == 1) {
